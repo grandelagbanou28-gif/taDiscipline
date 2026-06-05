@@ -1,7 +1,6 @@
 {
   "functions": {
-    "api/delaide-chat.ts": {
-      "runtime": "edge",
+    "api/delaide-chat.js": {
       "maxDuration": 30
     }
   }
