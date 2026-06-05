@@ -1,0 +1,1 @@
+C:\flutter_projects\MonObjectif\taDiscipline\android\app\build\intermediates\cxx\release\1867064f\obj\arm64-v8a

@@ -1,0 +1,2 @@
+C:/flutter_projects/MonObjectif/taDiscipline/android/app/.cxx/release/1867064f/x86_64/CMakeFiles/edit_cache.dir
+C:/flutter_projects/MonObjectif/taDiscipline/android/app/.cxx/release/1867064f/x86_64/CMakeFiles/rebuild_cache.dir

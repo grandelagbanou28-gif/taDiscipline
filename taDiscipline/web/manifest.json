@@ -1,0 +1,28 @@
+{
+  "name": "taDiscipline — Votre coach de discipline personnelle",
+  "short_name": "taDiscipline",
+  "description": "Application de discipline personnelle, gestion d'objectifs, habitudes, planning et assistant IA DelAide.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0D0D1A",
+  "theme_color": "#7C3AED",
+  "scope": "/",
+  "lang": "fr-FR",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "health", "education"],
+  "prefer_related_applications": false,
+  "related_applications": []
+}
