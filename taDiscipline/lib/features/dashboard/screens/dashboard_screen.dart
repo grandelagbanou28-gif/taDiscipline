@@ -510,6 +510,13 @@ class _QuickActionsRow extends StatelessWidget {
         Row(
           children: [
             _QuickAction(
+              icon: Icons.flag_outlined,
+              label: 'Mes Objectifs',
+              color: AppColors.primaryLight,
+              onTap: () => context.push('/goals'),
+            ),
+            const SizedBox(width: 12),
+            _QuickAction(
               icon: Icons.emoji_events_outlined,
               label: 'Défis',
               color: AppColors.gold,
@@ -517,17 +524,10 @@ class _QuickActionsRow extends StatelessWidget {
             ),
             const SizedBox(width: 12),
             _QuickAction(
-              icon: Icons.videocam_outlined,
-              label: 'Appel',
-              color: AppColors.primaryLight,
-              onTap: () => context.push('/challenges'),
-            ),
-            const SizedBox(width: 12),
-            _QuickAction(
-              icon: Icons.search,
-              label: 'Recherche',
-              color: AppColors.textSecondary,
-              onTap: () => context.push('/search'),
+              icon: Icons.bar_chart_outlined,
+              label: 'Statistiques',
+              color: AppColors.cyan,
+              onTap: () => context.push('/statistics'),
             ),
             const SizedBox(width: 12),
           ],
