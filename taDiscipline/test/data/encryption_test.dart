@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ta_discipline/core/utils/encryption.dart';
+import 'package:apex/core/utils/encryption.dart';
 
 void main() {
   group('EncryptionService', () {

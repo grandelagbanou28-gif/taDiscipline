@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ta_discipline/features/pomodoro/screens/pomodoro_screen.dart';
+import 'package:apex/features/pomodoro/screens/pomodoro_screen.dart';
 
 void main() {
   testWidgets('PomodoroScreen se construit sans planter', (tester) async {

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
 
 void main() {
   testWidgets('GlassCard affiche le child', (tester) async {

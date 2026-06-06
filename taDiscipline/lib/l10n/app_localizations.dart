@@ -97,7 +97,7 @@ abstract class AppLocalizations {
   /// Le nom de l'application
   ///
   /// In fr, this message translates to:
-  /// **'taDiscipline'**
+  /// **'Apex'**
   String get appName;
 
   /// Le slogan de l'application
@@ -301,7 +301,7 @@ abstract class AppLocalizations {
   /// No description provided for @welcome.
   ///
   /// In fr, this message translates to:
-  /// **'Bienvenue sur taDiscipline'**
+  /// **'Bienvenue sur Apex'**
   String get welcome;
 
   /// No description provided for @motivation.

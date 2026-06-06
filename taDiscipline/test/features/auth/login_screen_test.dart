@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ta_discipline/features/auth/screens/login_screen.dart';
+import 'package:apex/features/auth/screens/login_screen.dart';
 
 void main() {
   testWidgets('LoginScreen affiche les champs', (tester) async {
@@ -13,7 +13,7 @@ void main() {
       ),
     );
 
-    expect(find.text('taDiscipline'), findsOneWidget);
+    expect(find.text('Apex'), findsOneWidget);
     expect(find.text('Connexion'), findsOneWidget);
     expect(find.byType(TextField), findsWidgets);
   });

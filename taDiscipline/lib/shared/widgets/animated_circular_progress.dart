@@ -1,6 +1,6 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
+import 'package:apex/core/theme/app_colors.dart';
 
 class AnimatedCircularProgress extends StatefulWidget {
   final double progress;

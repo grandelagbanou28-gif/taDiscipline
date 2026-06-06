@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ta_discipline/core/utils/validators.dart';
+import 'package:apex/core/utils/validators.dart';
 
 void main() {
   group('Validators - Email', () {

@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:ta_discipline/shared/widgets/streak_flame.dart';
+import 'package:apex/shared/widgets/streak_flame.dart';
 
 void main() {
   testWidgets('StreakFlame affiche le count', (tester) async {

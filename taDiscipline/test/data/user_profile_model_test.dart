@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ta_discipline/data/models/user_profile.dart';
+import 'package:apex/data/models/user_profile.dart';
 
 void main() {
   group('UserProfile model', () {

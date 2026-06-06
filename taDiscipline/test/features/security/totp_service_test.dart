@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ta_discipline/features/security/services/totp_service.dart';
+import 'package:apex/features/security/services/totp_service.dart';
 
 void main() {
   group('TotpService', () {

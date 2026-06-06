@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ta_discipline/core/services/achievement_service.dart';
-import 'package:ta_discipline/core/constants/goal_categories.dart';
+import 'package:apex/core/services/achievement_service.dart';
+import 'package:apex/core/constants/goal_categories.dart';
 
 void main() {
   group('AchievementService', () {

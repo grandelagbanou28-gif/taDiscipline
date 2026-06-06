@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:ta_discipline/shared/widgets/app_text_field.dart';
+import 'package:apex/shared/widgets/app_text_field.dart';
 
 void main() {
   testWidgets('AppTextField affiche le label', (tester) async {

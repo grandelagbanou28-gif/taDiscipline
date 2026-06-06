@@ -1,6 +1,6 @@
 {
   "@@locale": "fr",
-  "appName": "taDiscipline",
+  "appName": "Apex",
   "@appName": {
     "description": "Le nom de l'application"
   },
@@ -40,6 +40,6 @@
   "error": "Erreur",
   "success": "Succès",
   "retry": "Réessayer",
-  "welcome": "Bienvenue sur taDiscipline",
+  "welcome": "Bienvenue sur Apex",
   "motivation": "La discipline est le pont entre les objectifs et leurs accomplissements."
 }

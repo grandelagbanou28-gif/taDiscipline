@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ta_discipline/core/utils/date_utils.dart';
+import 'package:apex/core/utils/date_utils.dart';
 
 void main() {
   group('DateUtils - AppDateUtils', () {

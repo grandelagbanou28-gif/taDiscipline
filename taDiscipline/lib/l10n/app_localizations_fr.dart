@@ -9,7 +9,7 @@ class AppLocalizationsFr extends AppLocalizations {
   AppLocalizationsFr([String locale = 'fr']) : super(locale);
 
   @override
-  String get appName => 'taDiscipline';
+  String get appName => 'Apex';
 
   @override
   String get slogan => 'Maîtrise ton quotidien, conquiers tes rêves.';
@@ -111,7 +111,7 @@ class AppLocalizationsFr extends AppLocalizations {
   String get retry => 'Réessayer';
 
   @override
-  String get welcome => 'Bienvenue sur taDiscipline';
+  String get welcome => 'Bienvenue sur Apex';
 
   @override
   String get motivation =>

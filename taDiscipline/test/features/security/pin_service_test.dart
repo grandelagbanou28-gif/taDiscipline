@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:ta_discipline/features/security/services/pin_service.dart';
-import 'package:ta_discipline/data/repositories/auth_repository.dart';
+import 'package:apex/features/security/services/pin_service.dart';
+import 'package:apex/data/repositories/auth_repository.dart';
 
 void main() {
   group('PinService', () {

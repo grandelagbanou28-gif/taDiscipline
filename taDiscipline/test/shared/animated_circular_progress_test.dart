@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
-import 'package:ta_discipline/shared/widgets/animated_circular_progress.dart';
+import 'package:apex/shared/widgets/animated_circular_progress.dart';
 
 void main() {
   testWidgets('AnimatedCircularProgress affiche le centerText',
