@@ -31,7 +31,7 @@ class DashboardScreen extends ConsumerWidget {
             onPressed: () => context.push('/search'),
           ),
           IconButton(
-            icon: const Icon(Icons.person_outline),
+            icon: const Icon(Icons.settings),
             onPressed: () => context.push('/settings'),
           ),
         ],
@@ -88,7 +88,16 @@ class DashboardScreen extends ConsumerWidget {
                 _NextDeadlineCard(deadline: data.nextDeadline),
                 const SizedBox(height: 20),
                 _QuickActionsRow(),
-                const SizedBox(height: 100),
+                const SizedBox(height: 16),
+                Center(
+                  child: IconButton(
+                    icon: const Icon(Icons.person_outline),
+                    iconSize: 28,
+                    color: AppColors.textSecondary,
+                    onPressed: () => context.push('/settings'),
+                  ),
+                ),
+                const SizedBox(height: 80),
               ],
             ),
           );
