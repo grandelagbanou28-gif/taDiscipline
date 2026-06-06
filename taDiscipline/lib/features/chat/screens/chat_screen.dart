@@ -118,7 +118,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
               ))
           .toList();
 
-      final response = await chatRepo.sendToDelAide(
+      final response = await chatRepo.sendToApexIA(
         userId: userId,
         message: text,
         history: history,
