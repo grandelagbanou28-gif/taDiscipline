@@ -1,4 +1,4 @@
-import 'package:ta_discipline/core/constants/goal_categories.dart';
+import 'package:apex/core/constants/goal_categories.dart';
 
 class Goal {
   final String id;

@@ -1,22 +1,11 @@
-import 'package:flutter/foundation.dart';
-import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ta_discipline/data/repositories/auth_repository.dart';
-import 'package:ta_discipline/data/models/user_profile.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:apex/data/local/app_session.dart';
+import 'package:apex/data/models/user_profile.dart';
 
-part 'auth_provider.g.dart';
-
-@riverpod
-class Auth extends _$Auth {
+class AuthNotifier extends Notifier<AsyncValue<UserProfile?>> {
   @override
   AsyncValue<UserProfile?> build() {
-    _init();
     return const AsyncValue.data(null);
-  }
-
-  void _init() {
-    ref.onDispose(() {});
   }
 
   Future<void> signIn({
@@ -25,15 +14,8 @@ class Auth extends _$Auth {
   }) async {
     state = const AsyncValue.loading();
     try {
-      final repo = AuthRepository();
-      final response = await repo.signInWithEmail(
-        email: email,
-        password: password,
-      );
-      if (response.user != null) {
-        final profile = await repo.getProfile(response.user!.id);
-        state = AsyncValue.data(profile);
-      }
+      final user = await AppSession.ensureUser();
+      state = AsyncValue.data(user);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
       rethrow;
@@ -47,56 +29,9 @@ class Auth extends _$Auth {
   }) async {
     state = const AsyncValue.loading();
     try {
-      final repo = AuthRepository();
-      final response = await repo.signUpWithEmail(
-        email: email,
-        password: password,
-        displayName: displayName,
-      );
-      if (response.user != null) {
-        final profile = await repo.getProfile(response.user!.id);
-        state = AsyncValue.data(profile);
-      }
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-      rethrow;
-    }
-  }
-
-  /// OAuth Google — lance le navigateur, puis attend le callback deep link
-  Future<void> signInWithGoogle() async {
-    state = const AsyncValue.loading();
-    try {
-      final repo = AuthRepository();
-      // Lance l'auth, ouvre le navigateur
-      await repo.signInWithGoogle();
-      // Attend que le deep link revienne avec la session
-      final user = await AppSupabase.waitForSession();
-      if (user != null) {
-        final profile = await repo.getProfile(user.id);
-        state = AsyncValue.data(profile);
-      } else {
-        state = const AsyncValue.data(null);
-      }
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-      rethrow;
-    }
-  }
-
-  /// OAuth Apple
-  Future<void> signInWithApple() async {
-    state = const AsyncValue.loading();
-    try {
-      final repo = AuthRepository();
-      await repo.signInWithApple();
-      final user = await AppSupabase.waitForSession();
-      if (user != null) {
-        final profile = await repo.getProfile(user.id);
-        state = AsyncValue.data(profile);
-      } else {
-        state = const AsyncValue.data(null);
-      }
+      await AppSession.setDisplayName(displayName);
+      final user = await AppSession.ensureUser();
+      state = AsyncValue.data(user);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
       rethrow;
@@ -104,32 +39,35 @@ class Auth extends _$Auth {
   }
 
   Future<void> signOut() async {
-    await AuthRepository().signOut();
+    await AppSession.signOut();
     state = const AsyncValue.data(null);
   }
 
   Future<void> refreshProfile() async {
     final current = state.valueOrNull;
     if (current != null) {
-      final profile = await AuthRepository().getProfile(current.id);
-      state = AsyncValue.data(profile);
+      final updated = await AppSession.ensureUser();
+      state = AsyncValue.data(updated);
     }
   }
 
-  /// Vérifie si une session existe déjà (au démarrage de l'app)
   Future<bool> tryRestoreSession() async {
-    final session = AppSupabase.client.auth.currentSession;
-    if (session != null && session.user != null) {
-      try {
-        final profile = await AuthRepository().getProfile(session.user!.id);
-        state = AsyncValue.data(profile);
-        return true;
-      } catch (_) {
-        // Profil pas encore créé
-        state = const AsyncValue.data(null);
-        return false;
-      }
+    try {
+      final user = await AppSession.ensureUser();
+      state = AsyncValue.data(user);
+      return true;
+    } catch (_) {
+      state = const AsyncValue.data(null);
+      return false;
     }
-    return false;
   }
 }
+
+final authProvider =
+    NotifierProvider<AuthNotifier, AsyncValue<UserProfile?>>(
+  AuthNotifier.new,
+);
+
+final currentUserIdProvider = Provider<String?>((ref) {
+  return ref.watch(authProvider).valueOrNull?.id;
+});

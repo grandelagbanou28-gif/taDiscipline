@@ -1,4 +1,4 @@
-import 'package:ta_discipline/core/constants/goal_categories.dart';
+import 'package:apex/core/constants/goal_categories.dart';
 
 class JournalEntry {
   final String id;
@@ -155,6 +155,9 @@ class UserSettings {
   final bool notificationsEnabled;
   final int lockTimeoutMinutes;
   final String language;
+  final String? sleepTime;
+  final bool sleepResetEnabled;
+  final dynamic pingSchedules;
 
   const UserSettings({
     required this.id,
@@ -163,6 +166,9 @@ class UserSettings {
     this.notificationsEnabled = true,
     this.lockTimeoutMinutes = 2,
     this.language = 'fr',
+    this.sleepTime,
+    this.sleepResetEnabled = false,
+    this.pingSchedules,
   });
 
   Map<String, dynamic> toJson() => {
@@ -172,6 +178,9 @@ class UserSettings {
         'notifications': notificationsEnabled,
         'lock_timeout': lockTimeoutMinutes,
         'language': language,
+        'sleep_time': sleepTime,
+        'sleep_reset_enabled': sleepResetEnabled,
+        'ping_schedules': pingSchedules,
       };
 
   factory UserSettings.fromJson(Map<String, dynamic> json) => UserSettings(
@@ -181,6 +190,9 @@ class UserSettings {
         notificationsEnabled: json['notifications'] as bool? ?? true,
         lockTimeoutMinutes: (json['lock_timeout'] as num?)?.toInt() ?? 2,
         language: json['language'] as String? ?? 'fr',
+        sleepTime: json['sleep_time'] as String?,
+        sleepResetEnabled: json['sleep_reset_enabled'] as bool? ?? false,
+        pingSchedules: json['ping_schedules'],
       );
 
   UserSettings copyWith({
@@ -188,6 +200,9 @@ class UserSettings {
     bool? notificationsEnabled,
     int? lockTimeoutMinutes,
     String? language,
+    String? sleepTime,
+    bool? sleepResetEnabled,
+    dynamic pingSchedules,
   }) =>
       UserSettings(
         id: id,
@@ -197,5 +212,8 @@ class UserSettings {
             notificationsEnabled ?? this.notificationsEnabled,
         lockTimeoutMinutes: lockTimeoutMinutes ?? this.lockTimeoutMinutes,
         language: language ?? this.language,
+        sleepTime: sleepTime ?? this.sleepTime,
+        sleepResetEnabled: sleepResetEnabled ?? this.sleepResetEnabled,
+        pingSchedules: pingSchedules ?? this.pingSchedules,
       );
 }

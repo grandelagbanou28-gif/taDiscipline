@@ -1,4 +1,4 @@
-import 'package:ta_discipline/core/constants/goal_categories.dart';
+import 'package:apex/core/constants/goal_categories.dart';
 
 class Habit {
   final String id;
@@ -10,6 +10,8 @@ class Habit {
   final String? color;
   final String? icon;
   final bool isPositive;
+  final int cycleInterval;
+  final String cycleUnit;
   final DateTime createdAt;
 
   const Habit({
@@ -22,6 +24,8 @@ class Habit {
     this.color,
     this.icon,
     this.isPositive = true,
+    this.cycleInterval = 1,
+    this.cycleUnit = 'day',
     required this.createdAt,
   });
 
@@ -35,6 +39,8 @@ class Habit {
         'color': color,
         'icon': icon,
         'is_positive': isPositive,
+        'cycle_interval': cycleInterval,
+        'cycle_unit': cycleUnit,
         'created_at': createdAt.toIso8601String(),
       };
 
@@ -51,8 +57,30 @@ class Habit {
         color: json['color'] as String?,
         icon: json['icon'] as String?,
         isPositive: json['is_positive'] as bool? ?? true,
+        cycleInterval: (json['cycle_interval'] as num?)?.toInt() ?? 1,
+        cycleUnit: json['cycle_unit'] as String? ?? 'day',
         createdAt: DateTime.parse(json['created_at'] as String),
       );
+
+  bool isDueToday() {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final start = DateTime(createdAt.year, createdAt.month, createdAt.day);
+    final daysSince = today.difference(start).inDays;
+
+    switch (cycleUnit) {
+      case 'day':
+        return daysSince % cycleInterval == 0;
+      case 'week':
+        return daysSince % (cycleInterval * 7) == 0;
+      case 'month':
+        final monthsSince =
+            (now.year - createdAt.year) * 12 + (now.month - createdAt.month);
+        return monthsSince % cycleInterval == 0;
+      default:
+        return daysSince % cycleInterval == 0;
+    }
+  }
 
   Habit copyWith({
     String? name,
@@ -62,6 +90,8 @@ class Habit {
     String? color,
     String? icon,
     bool? isPositive,
+    int? cycleInterval,
+    String? cycleUnit,
   }) =>
       Habit(
         id: id,
@@ -73,6 +103,8 @@ class Habit {
         color: color ?? this.color,
         icon: icon ?? this.icon,
         isPositive: isPositive ?? this.isPositive,
+        cycleInterval: cycleInterval ?? this.cycleInterval,
+        cycleUnit: cycleUnit ?? this.cycleUnit,
         createdAt: createdAt,
       );
 }
