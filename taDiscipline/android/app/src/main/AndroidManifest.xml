@@ -14,7 +14,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-        android:label="taDiscipline"
+        android:label="Apex"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher"
         android:enableOnBackInvokedCallback="true"
@@ -51,6 +51,17 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+
+        <receiver
+            android:name=".ApexWidget"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/apex_widget_info" />
+        </receiver>
     </application>
 
     <queries>

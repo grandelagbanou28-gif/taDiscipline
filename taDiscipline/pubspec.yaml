@@ -1,4 +1,4 @@
-name: ta_discipline
+name: apex
 description: "Maîtrise ton quotidien, conquiers tes rêves."
 publish_to: 'none'
 version: 1.0.0+1
@@ -21,11 +21,7 @@ dependencies:
   # Navigation
   go_router: ^14.2.7
 
-  # Supabase
-  supabase_flutter: ^2.6.0
-
   # Storage & security
-  flutter_secure_storage: ^9.2.2
   local_auth: ^2.3.0
   encrypt: ^5.0.3
   crypto: ^3.0.5
@@ -47,7 +43,9 @@ dependencies:
   url_launcher: ^6.3.0
   permission_handler: ^11.3.1
   device_info_plus: ^10.1.2
-  connectivity_plus: ^6.0.3
+  # Offline-first
+  sqflite: ^2.3.3+2
+  path: ^1.9.0
 
   # Notifications
   flutter_local_notifications: ^17.2.2

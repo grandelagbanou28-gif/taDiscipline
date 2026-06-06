@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 class AppConstants {
   AppConstants._();
 
-  static const String appName = 'taDiscipline';
+  static const String appName = 'Apex';
   static const String slogan = 'Maîtrise ton quotidien, conquiers tes rêves.';
 
   static const String defaultQuote =
@@ -27,43 +27,13 @@ class AppConstants {
   static const Duration animationNormal = Duration(milliseconds: 400);
   static const Duration animationSlow = Duration(milliseconds: 800);
 
-  /// Supabase URL — fournie via --dart-define SUPABASE_URL ou variable d'environnement.
-  /// Se lit dans l'ordre : dart-define > variable env > fallback vide.
-  static String get supabaseUrl {
-    const fromDefine = String.fromEnvironment('SUPABASE_URL');
-    if (fromDefine.isNotEmpty) return fromDefine;
-    const fromEnv = String.fromEnvironment('SUPABASE_URL',
-        defaultValue: '');
-    if (fromEnv.isNotEmpty) return fromEnv;
-    return 'https://votre-projet.supabase.co';
-  }
-
-  /// Supabase anon key (publique, sans danger).
-  static String get supabaseAnonKey {
-    const fromDefine = String.fromEnvironment('SUPABASE_ANON_KEY');
-    if (fromDefine.isNotEmpty) return fromDefine;
-    const fromEnv = String.fromEnvironment('SUPABASE_ANON_KEY',
-        defaultValue: '');
-    if (fromEnv.isNotEmpty) return fromEnv;
-    return 'votre-anon-key';
-  }
-
-  /// Clé xAI / Grok — utilisée côté Edge Function uniquement.
+  /// Clé xAI / Grok.
   static String get xaiApiKey {
     const fromDefine = String.fromEnvironment('XAI_API_KEY');
     if (fromDefine.isNotEmpty) return fromDefine;
-    const fromEnv = String.fromEnvironment('XAI_API_KEY',
-        defaultValue: '');
+    const fromEnv = String.fromEnvironment('XAI_API_KEY', defaultValue: '');
     if (fromEnv.isNotEmpty) return fromEnv;
     return '';
-  }
-
-  /// Endpoint pour DelAide IA (Vercel ou Supabase Edge Function).
-  /// Surchargeable via --dart-define DELAIDE_API_URL=https://xxx.vercel.app/api/delaide-chat
-  static String get delaideApiEndpoint {
-    const customUrl = String.fromEnvironment('DELAIDE_API_URL');
-    if (customUrl.isNotEmpty) return customUrl;
-    return '$supabaseUrl/functions/v1/delaide-chat';
   }
 
   /// Vrai en production

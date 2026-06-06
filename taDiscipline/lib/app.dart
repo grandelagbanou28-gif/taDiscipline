@@ -1,24 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
-import 'package:ta_discipline/core/theme/app_theme.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/core/router/app_router.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
-import 'package:ta_discipline/features/auth/providers/auth_provider.dart';
-import 'package:ta_discipline/features/security/services/auto_lock_service.dart';
-import 'package:ta_discipline/features/security/services/panic_service.dart';
-import 'package:ta_discipline/features/security/screens/pin_unlock_screen.dart';
+import 'package:apex/core/constants/app_constants.dart';
+import 'package:apex/core/theme/app_theme.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/core/router/app_router.dart';
+import 'package:apex/data/local/app_session.dart';
+import 'package:apex/features/auth/providers/auth_provider.dart';
+import 'package:apex/features/security/services/auto_lock_service.dart';
+import 'package:apex/features/security/services/panic_service.dart';
+import 'package:apex/features/security/screens/pin_unlock_screen.dart';
 
-class TaDisciplineApp extends ConsumerStatefulWidget {
-  const TaDisciplineApp({super.key});
+class ApexApp extends ConsumerStatefulWidget {
+  const ApexApp({super.key});
 
   @override
-  ConsumerState<TaDisciplineApp> createState() => _TaDisciplineAppState();
+  ConsumerState<ApexApp> createState() => _ApexAppState();
 }
 
-class _TaDisciplineAppState extends ConsumerState<TaDisciplineApp>
+class _ApexAppState extends ConsumerState<ApexApp>
     with WidgetsBindingObserver {
   late AutoLockService _autoLockService;
   late PanicService _panicService;
@@ -42,15 +42,11 @@ class _TaDisciplineAppState extends ConsumerState<TaDisciplineApp>
       ),
     );
 
-    // Restaurer la session OAuth au démarrage
     _restoreSession();
   }
 
   Future<void> _restoreSession() async {
-    final restored = await ref.read(authProvider.notifier).tryRestoreSession();
-    if (restored && mounted) {
-      context.go('/dashboard');
-    }
+    await ref.read(authProvider.notifier).tryRestoreSession();
     if (mounted) {
       setState(() => _initialized = true);
     }
@@ -60,7 +56,7 @@ class _TaDisciplineAppState extends ConsumerState<TaDisciplineApp>
   void dispose() {
     _autoLockService.dispose();
     WidgetsBinding.instance.removeObserver(this);
-    AppSupabase.dispose();
+    AppSession.dispose();
     super.dispose();
   }
 
@@ -86,7 +82,7 @@ class _TaDisciplineAppState extends ConsumerState<TaDisciplineApp>
     return GestureDetector(
       onTap: () => _autoLockService.resetTimer(),
       child: MaterialApp.router(
-        title: 'taDiscipline',
+        title: AppConstants.appName,
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
         routerConfig: appRouter,

@@ -1,28 +1,28 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ta_discipline/features/auth/screens/login_screen.dart';
-import 'package:ta_discipline/features/auth/screens/register_screen.dart';
-import 'package:ta_discipline/features/onboarding/screens/onboarding_screen.dart';
-import 'package:ta_discipline/features/security/screens/pin_setup_screen.dart';
-import 'package:ta_discipline/features/security/screens/pin_unlock_screen.dart';
-import 'package:ta_discipline/features/dashboard/screens/main_shell.dart';
-import 'package:ta_discipline/features/dashboard/screens/dashboard_screen.dart';
-import 'package:ta_discipline/features/goals/screens/goals_screen.dart';
-import 'package:ta_discipline/features/goals/screens/goal_detail_screen.dart';
-import 'package:ta_discipline/features/goals/screens/goal_create_screen.dart';
-import 'package:ta_discipline/features/habits/screens/habits_screen.dart';
-import 'package:ta_discipline/features/habits/screens/habit_create_screen.dart';
-import 'package:ta_discipline/features/challenges/screens/challenges_screen.dart';
-import 'package:ta_discipline/features/challenges/screens/challenge_create_screen.dart';
-import 'package:ta_discipline/features/challenges/screens/challenge_detail_screen.dart';
-import 'package:ta_discipline/features/plans/screens/plans_screen.dart';
-import 'package:ta_discipline/features/journal/screens/journal_screen.dart';
-import 'package:ta_discipline/features/pomodoro/screens/pomodoro_screen.dart';
-import 'package:ta_discipline/features/statistics/screens/statistics_screen.dart';
-import 'package:ta_discipline/features/chat/screens/chat_screen.dart';
-import 'package:ta_discipline/features/settings/screens/settings_screen.dart';
-import 'package:ta_discipline/features/stories/screens/story_create_screen.dart';
-import 'package:ta_discipline/features/search/screens/search_screen.dart';
+import 'package:apex/features/onboarding/screens/onboarding_screen.dart';
+import 'package:apex/features/security/screens/pin_setup_screen.dart';
+import 'package:apex/features/security/screens/pin_unlock_screen.dart';
+import 'package:apex/features/dashboard/screens/main_shell.dart';
+import 'package:apex/features/dashboard/screens/dashboard_screen.dart';
+import 'package:apex/features/goals/screens/goals_screen.dart';
+import 'package:apex/features/goals/screens/goal_detail_screen.dart';
+import 'package:apex/features/goals/screens/goal_create_screen.dart';
+import 'package:apex/features/habits/screens/habits_screen.dart';
+import 'package:apex/features/habits/screens/habit_create_screen.dart';
+import 'package:apex/features/challenges/screens/challenges_screen.dart';
+import 'package:apex/features/challenges/screens/challenge_create_screen.dart';
+import 'package:apex/features/challenges/screens/challenge_detail_screen.dart';
+import 'package:apex/features/plans/screens/plans_screen.dart';
+import 'package:apex/features/journal/screens/journal_screen.dart';
+import 'package:apex/features/pomodoro/screens/pomodoro_screen.dart';
+import 'package:apex/features/statistics/screens/statistics_screen.dart';
+import 'package:apex/features/chat/screens/chat_screen.dart';
+import 'package:apex/features/settings/screens/settings_screen.dart';
+import 'package:apex/features/settings/screens/ping_schedule_screen.dart';
+import 'package:apex/features/widget/screens/widget_config_screen.dart';
+import 'package:apex/features/stories/screens/story_create_screen.dart';
+import 'package:apex/features/search/screens/search_screen.dart';
 
 final GoRouter appRouter = GoRouter(
   initialLocation: '/onboarding',
@@ -31,16 +31,6 @@ final GoRouter appRouter = GoRouter(
       path: '/onboarding',
       name: 'onboarding',
       builder: (context, state) => const OnboardingScreen(),
-    ),
-    GoRoute(
-      path: '/login',
-      name: 'login',
-      builder: (context, state) => const LoginScreen(),
-    ),
-    GoRoute(
-      path: '/register',
-      name: 'register',
-      builder: (context, state) => const RegisterScreen(),
     ),
     GoRoute(
       path: '/pin-setup',
@@ -58,6 +48,18 @@ final GoRouter appRouter = GoRouter(
       path: '/settings',
       name: 'settings',
       builder: (context, state) => const SettingsScreen(),
+      routes: [
+        GoRoute(
+          path: 'pings',
+          name: 'pings',
+          builder: (context, state) => const PingScheduleScreen(),
+        ),
+        GoRoute(
+          path: 'widget-config',
+          name: 'widgetConfig',
+          builder: (context, state) => const WidgetConfigScreen(),
+        ),
+      ],
     ),
     ShellRoute(
       builder: (context, state, child) => MainShell(child: child),
