@@ -89,14 +89,7 @@ class DashboardScreen extends ConsumerWidget {
                 const SizedBox(height: 20),
                 _QuickActionsRow(),
                 const SizedBox(height: 16),
-                Center(
-                  child: IconButton(
-                    icon: const Icon(Icons.person_outline),
-                    iconSize: 28,
-                    color: AppColors.textSecondary,
-                    onPressed: () => context.push('/settings'),
-                  ),
-                ),
+                _UserProfileCard(profile: profile),
                 const SizedBox(height: 80),
               ],
             ),
@@ -573,6 +566,85 @@ class _QuickAction extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _UserProfileCard extends StatelessWidget {
+  final UserProfile? profile;
+
+  const _UserProfileCard({required this.profile});
+
+  @override
+  Widget build(BuildContext context) {
+    return GlassCard(
+      onTap: () => context.push('/settings'),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      child: Row(
+        children: [
+          Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(12),
+              gradient: profile?.avatarUrl == null
+                  ? const LinearGradient(
+                      colors: [AppColors.primary, AppColors.primaryDark],
+                    )
+                  : null,
+              image: profile?.avatarUrl != null
+                  ? DecorationImage(
+                      image: FileImage(File(profile!.avatarUrl!)),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+            child: profile?.avatarUrl == null
+                ? Center(
+                    child: Text(
+                      ((profile?.firstName?.isNotEmpty == true
+                              ? profile!.firstName!
+                              : 'U')
+                          .toUpperCase()[0]),
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
+                  )
+                : null,
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  profile?.displayName ?? 'Utilisateur',
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.textPrimary,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                const Text(
+                  'Modifier le profil',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.textMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(
+            Icons.chevron_right,
+            color: AppColors.textMuted,
+          ),
+        ],
       ),
     );
   }
