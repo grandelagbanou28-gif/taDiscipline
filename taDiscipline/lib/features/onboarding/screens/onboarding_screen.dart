@@ -41,7 +41,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     ),
     _OnboardingStep(
       icon: Icons.auto_awesome_rounded,
-      title: 'DelAide IA ton coach',
+      title: 'Apex IA',
       description:
           'Un assistant personnel propulsé par Grok (xAI)\n'
           'pour te motiver et t\'aider au quotidien.',
