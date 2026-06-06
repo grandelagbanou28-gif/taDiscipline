@@ -1,12 +1,13 @@
 import 'package:flutter/foundation.dart';
-import 'package:ta_discipline/core/constants/goal_categories.dart';
-import 'package:ta_discipline/data/repositories/achievement_repository.dart';
-import 'package:ta_discipline/data/repositories/goal_repository.dart';
-import 'package:ta_discipline/data/repositories/habit_repository.dart';
-import 'package:ta_discipline/data/repositories/journal_repository.dart';
-import 'package:ta_discipline/data/repositories/pomodoro_repository.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
-import 'package:ta_discipline/core/services/notification_service.dart';
+import 'package:apex/core/constants/goal_categories.dart';
+import 'package:apex/data/models/journal_entry.dart';
+import 'package:apex/data/repositories/achievement_repository.dart';
+import 'package:apex/data/repositories/goal_repository.dart';
+import 'package:apex/data/repositories/habit_repository.dart';
+import 'package:apex/data/repositories/journal_repository.dart';
+import 'package:apex/data/repositories/pomodoro_repository.dart';
+import 'package:apex/data/local/app_session.dart';
+import 'package:apex/core/services/notification_service.dart';
 
 class AchievementService {
   final AchievementRepository _achievementRepo = AchievementRepository();
@@ -16,13 +17,13 @@ class AchievementService {
   final PomodoroRepository _pomodoroRepo = PomodoroRepository();
 
   Future<List<Achievement>> getAchievements() async {
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return [];
     return _achievementRepo.getAchievements(userId);
   }
 
   Future<void> checkAndUnlock() async {
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return;
 
     final unlocked = await _achievementRepo.getUnlockedBadges(userId);

@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ta_discipline/data/repositories/goal_repository.dart';
-import 'package:ta_discipline/data/repositories/habit_repository.dart';
-import 'package:ta_discipline/data/repositories/achievement_repository.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/data/repositories/goal_repository.dart';
+import 'package:apex/data/repositories/habit_repository.dart';
+import 'package:apex/data/repositories/achievement_repository.dart';
+import 'package:apex/data/local/app_session.dart';
 
 final verifiedProvider = FutureProvider<bool>((ref) async {
-  final userId = AppSupabase.currentUser?.id;
+  final userId = AppSession.userId;
   if (userId == null) return false;
 
   final goalRepo = GoalRepository();

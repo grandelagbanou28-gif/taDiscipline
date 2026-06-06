@@ -1,22 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
-import 'package:ta_discipline/shared/widgets/verified_badge.dart';
-import 'package:ta_discipline/data/models/user_profile.dart';
-import 'package:ta_discipline/data/repositories/settings_repository.dart';
-import 'package:ta_discipline/data/repositories/auth_repository.dart';
-import 'package:ta_discipline/data/models/journal_entry.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
-import 'package:ta_discipline/features/auth/providers/auth_provider.dart';
-import 'package:ta_discipline/features/settings/providers/verified_provider.dart';
-import 'package:ta_discipline/features/security/services/pin_service.dart';
-import 'package:ta_discipline/features/security/services/biometric_service.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
+import 'package:apex/shared/widgets/verified_badge.dart';
+import 'package:apex/data/local/app_session.dart';
+import 'package:apex/data/models/user_profile.dart';
+import 'package:apex/data/repositories/settings_repository.dart';
+import 'package:apex/data/models/journal_entry.dart';
+import 'package:apex/features/auth/providers/auth_provider.dart';
+import 'package:apex/features/settings/providers/verified_provider.dart';
+import 'package:apex/features/security/services/biometric_service.dart';
+import 'package:apex/data/repositories/auth_repository.dart';
 
 final userSettingsProvider = FutureProvider<UserSettings>((ref) {
-  final userId = AppSupabase.currentUser?.id;
+  final userId = AppSession.userId;
   if (userId == null) throw Exception('Non connecté');
   return SettingsRepository().getSettings(userId);
 });
@@ -32,6 +30,8 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _notificationsEnabled = true;
   int _lockTimeout = 2;
   bool _biometricEnabled = false;
+  bool _sleepResetEnabled = false;
+  String? _sleepTime;
 
   @override
   void initState() {
@@ -40,21 +40,25 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   }
 
   Future<void> _loadSettings() async {
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return;
     try {
       final settings = await SettingsRepository().getSettings(userId);
+      final profile = ref.read(authProvider).valueOrNull;
       if (mounted) {
         setState(() {
           _notificationsEnabled = settings.notificationsEnabled;
           _lockTimeout = settings.lockTimeoutMinutes;
+          _biometricEnabled = profile?.biometricEnabled ?? false;
+          _sleepResetEnabled = settings.sleepResetEnabled;
+          _sleepTime = settings.sleepTime ?? '22:00';
         });
       }
     } catch (_) {}
   }
 
   Future<void> _toggleBiometric(bool value) async {
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return;
 
     if (value) {
@@ -76,11 +80,40 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     context.push('/pin-setup');
   }
 
+  Future<void> _pickSleepTime() async {
+    final parts = (_sleepTime ?? '22:00').split(':');
+    final initial = TimeOfDay(
+      hour: int.tryParse(parts[0]) ?? 22,
+      minute: int.tryParse(parts[1]) ?? 0,
+    );
+    final picked = await showTimePicker(
+      context: context,
+      initialTime: initial,
+      builder: (context, child) => Theme(
+        data: ThemeData.dark().copyWith(
+          colorScheme: const ColorScheme.dark(
+            primary: AppColors.primary,
+          ),
+        ),
+        child: child!,
+      ),
+    );
+    if (picked != null) {
+      final timeStr =
+          '${picked.hour.toString().padLeft(2, '0')}:${picked.minute.toString().padLeft(2, '0')}';
+      setState(() => _sleepTime = timeStr);
+      final userId = AppSession.userId;
+      if (userId == null) return;
+      final settings = await SettingsRepository().getSettings(userId);
+      await SettingsRepository().updateSettings(
+        settings.copyWith(sleepTime: timeStr),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final settingsAsync = ref.watch(userSettingsProvider);
-    final user = AppSupabase.currentUser;
-    final authAsync = ref.watch(authProvider);
+    final profile = ref.watch(authProvider).valueOrNull;
     final isVerified = ref.watch(verifiedProvider).valueOrNull ?? false;
 
     return Scaffold(
@@ -88,7 +121,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Profil
           GlassCard(
             child: Row(
               children: [
@@ -103,7 +135,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   ),
                   child: Center(
                     child: Text(
-                      _getInitial(user, authAsync),
+                      _getInitial(profile),
                       style: const TextStyle(
                         fontSize: 24,
                         fontWeight: FontWeight.w700,
@@ -121,7 +153,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                         children: [
                           Flexible(
                             child: Text(
-                              _getDisplayName(user, authAsync),
+                              _getDisplayName(profile),
                               style: const TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
@@ -136,17 +168,9 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                           ],
                         ],
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        user?.email ?? '',
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: AppColors.textMuted,
-                        ),
-                      ),
                       const SizedBox(height: 2),
                       Text(
-                        'Membre depuis ${user?.createdAt != null ? DateTime.tryParse(user!.createdAt!)?.day ?? "..." : "..."}',
+                        'Membre depuis ${profile?.createdAt.day ?? "..."}',
                         style: const TextStyle(
                           fontSize: 13,
                           color: AppColors.textSecondary,
@@ -213,7 +237,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     onChanged: (v) async {
                       if (v == null) return;
                       setState(() => _lockTimeout = v);
-                      final userId = AppSupabase.currentUser?.id;
+                      final userId = AppSession.userId;
                       if (userId == null) return;
                       final settings = await SettingsRepository()
                           .getSettings(userId);
@@ -247,7 +271,7 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 value: _notificationsEnabled,
                 onChanged: (v) async {
                   setState(() => _notificationsEnabled = v);
-                  final userId = AppSupabase.currentUser?.id;
+                  final userId = AppSession.userId;
                   if (userId == null) return;
                   final settings =
                       await SettingsRepository().getSettings(userId);
@@ -257,6 +281,56 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                 },
                 activeColor: AppColors.primary,
               ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Mode Sommeil
+          const Text(
+            'Mode Sommeil',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GlassCard(
+            child: Column(
+              children: [
+                _SettingTile(
+                  icon: Icons.bedtime_outlined,
+                  title: 'Mode Sommeil',
+                  subtitle: 'Réinitialisation quotidienne après l\'heure',
+                  trailing: Switch(
+                    value: _sleepResetEnabled,
+                    onChanged: (v) async {
+                      setState(() => _sleepResetEnabled = v);
+                      final userId = AppSession.userId;
+                      if (userId == null) return;
+                      final settings =
+                          await SettingsRepository().getSettings(userId);
+                      await SettingsRepository().updateSettings(
+                        settings.copyWith(sleepResetEnabled: v),
+                      );
+                    },
+                    activeColor: AppColors.primary,
+                  ),
+                ),
+                if (_sleepResetEnabled) ...[
+                  const Divider(height: 1),
+                  _SettingTile(
+                    icon: Icons.schedule,
+                    title: 'Heure du coucher',
+                    subtitle: _sleepTime ?? '22:00',
+                    trailing: IconButton(
+                      icon: const Icon(Icons.edit,
+                          color: AppColors.textMuted),
+                      onPressed: _pickSleepTime,
+                    ),
+                  ),
+                ],
+              ],
             ),
           ),
           const SizedBox(height: 24),
@@ -272,28 +346,63 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           ),
           const SizedBox(height: 12),
           GlassCard(
-            child: _SettingTile(
-              icon: Icons.dark_mode,
-              title: 'Mode sombre',
-              subtitle: 'Thème sombre par défaut',
-              trailing: Switch(
-                value: true,
-                onChanged: (_) {},
-                activeColor: AppColors.primary,
-              ),
+            child: Column(
+              children: [
+                _SettingTile(
+                  icon: Icons.dark_mode,
+                  title: 'Mode sombre',
+                  subtitle: 'Thème sombre par défaut',
+                  trailing: Switch(
+                    value: true,
+                    onChanged: (_) {},
+                    activeColor: AppColors.primary,
+                  ),
+                ),
+                const Divider(height: 1),
+                _SettingTile(
+                  icon: Icons.notifications_active,
+                  title: 'Pings intelligents',
+                  subtitle: 'Rituels et rappels contextuels',
+                  trailing: IconButton(
+                    icon: const Icon(Icons.chevron_right,
+                        color: AppColors.textMuted),
+                    onPressed: () => context.push('/settings/pings'),
+                  ),
+                ),
+                const Divider(height: 1),
+                _SettingTile(
+                  icon: Icons.widgets_outlined,
+                  title: 'Widget',
+                  subtitle: 'Widget écran d\'accueil',
+                  trailing: IconButton(
+                    icon: const Icon(Icons.chevron_right,
+                        color: AppColors.textMuted),
+                    onPressed: () => context.push('/settings/widget-config'),
+                  ),
+                ),
+              ],
             ),
           ),
           const SizedBox(height: 24),
 
           // Actions
-          GlassButton(
-            label: 'Déconnexion',
-            onPressed: () async {
-              await AuthRepository().signOut();
-              if (mounted) context.go('/login');
-            },
-            icon: Icons.logout,
-            color: AppColors.error,
+          Container(
+            width: double.infinity,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(16),
+              color: AppColors.error.withValues(alpha: 0.15),
+            ),
+            child: TextButton.icon(
+              onPressed: () async {
+                await AppSession.signOut();
+                if (mounted) context.go('/onboarding');
+              },
+              icon: const Icon(Icons.logout, color: AppColors.error),
+              label: const Text(
+                'Déconnexion',
+                style: TextStyle(color: AppColors.error),
+              ),
+            ),
           ),
           const SizedBox(height: 32),
         ],
@@ -301,14 +410,13 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  String _getDisplayName(User? user, AsyncValue<UserProfile?> authAsync) {
-    final profile = authAsync.valueOrNull;
+  String _getDisplayName(UserProfile? profile) {
     if (profile?.displayName.isNotEmpty == true) return profile!.displayName;
-    return user?.email ?? 'Utilisateur';
+    return 'Utilisateur';
   }
 
-  String _getInitial(User? user, AsyncValue<UserProfile?> authAsync) {
-    final name = _getDisplayName(user, authAsync);
+  String _getInitial(UserProfile? profile) {
+    final name = _getDisplayName(profile);
     return name.isNotEmpty ? name[0].toUpperCase() : '?';
   }
 }

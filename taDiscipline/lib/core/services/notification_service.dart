@@ -1,6 +1,6 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-import 'package:ta_discipline/core/constants/app_constants.dart';
+import 'package:apex/core/constants/app_constants.dart';
 
 class NotificationService {
   static final NotificationService _instance = NotificationService._();
@@ -40,8 +40,8 @@ class NotificationService {
     if (!_initialized) await initialize();
 
     const androidDetails = AndroidNotificationDetails(
-      'tadiscipline_channel',
-      'taDiscipline',
+      'Apex_channel',
+      'Apex',
       channelDescription: 'Rappels et notifications de l\'application',
       importance: Importance.high,
       priority: Priority.high,
@@ -70,7 +70,7 @@ class NotificationService {
     if (!_initialized) await initialize();
 
     const androidDetails = AndroidNotificationDetails(
-      'tadiscipline_daily',
+      'Apex_daily',
       'Rappels quotidiens',
       channelDescription: 'Rappels quotidiens pour tes objectifs',
       importance: Importance.high,
@@ -124,6 +124,42 @@ class NotificationService {
       id: 400,
       title: '🔥 $streak jours consécutifs !',
       body: 'Continue comme ça, tu assures !',
+    );
+  }
+
+  Future<void> scheduleContextualPing({
+    required int id,
+    required TimeOfDay timeOfDay,
+    required String title,
+    required String body,
+    required List<int> dayPattern,
+  }) async {
+    if (!_initialized) await initialize();
+
+    final now = DateTime.now();
+    final scheduledDate = DateTime(
+      now.year,
+      now.month,
+      now.day,
+      timeOfDay.hour,
+      timeOfDay.minute,
+    );
+
+    if (scheduledDate.isBefore(now)) return;
+
+    final androidDetails = AndroidNotificationDetails(
+      'Apex_pings',
+      'Pings contextuels',
+      channelDescription: 'Notifications intelligentes personnalisées',
+      importance: Importance.high,
+      priority: Priority.high,
+    );
+
+    await _plugin.show(
+      id,
+      title,
+      body,
+      NotificationDetails(android: androidDetails),
     );
   }
 }
