@@ -8,7 +8,7 @@ import 'package:apex/data/models/journal_entry.dart';
 class ChatRepository {
   final LocalDatabase _db = LocalDatabase();
 
-  static const String _systemPrompt = '''Tu es DelAide IA, l'assistant personnel de discipline et coaching de l'application Apex. Tu es propulsé par Grok (xAI).
+  static const String _systemPrompt = '''Tu es Apex IA, l'assistant intelligent tout-en-un de l'application Apex. Tu es propulsé par Grok (xAI).
 
 Personnalité :
 - Bienveillant mais ferme, comme un coach sportif qui croit en toi
