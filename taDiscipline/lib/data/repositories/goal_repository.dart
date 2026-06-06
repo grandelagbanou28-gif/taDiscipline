@@ -1,94 +1,58 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ta_discipline/data/models/goal.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/data/local/local_database.dart';
+import 'package:apex/data/models/goal.dart';
 
 class GoalRepository {
-  final SupabaseClient _client;
-
-  GoalRepository() : _client = AppSupabase.client;
+  final LocalDatabase _db = LocalDatabase();
 
   Future<List<Goal>> getGoals(String userId) async {
-    final response = await _client
-        .from('goals')
-        .select()
-        .eq('user_id', userId)
-        .order('created_at', ascending: false);
-    return (response as List)
-        .map((json) => Goal.fromJson(json as Map<String, dynamic>))
-        .toList();
+    final rows = await _db.query('goals',
+        where: 'user_id = ?', whereArgs: [userId], orderBy: 'created_at DESC');
+    return rows.map((j) => Goal.fromJson(j)).toList();
   }
 
   Future<Goal> getGoal(String goalId) async {
-    final response = await _client
-        .from('goals')
-        .select()
-        .eq('id', goalId)
-        .single();
-    return Goal.fromJson(response);
+    final row = await _db.querySingle('goals', where: 'id = ?', whereArgs: [goalId]);
+    if (row == null) throw Exception('Objectif introuvable');
+    return Goal.fromJson(row);
   }
 
   Future<Goal> createGoal(Goal goal) async {
-    final response = await _client
-        .from('goals')
-        .insert(goal.toJson())
-        .select()
-        .single();
-    return Goal.fromJson(response);
+    await _db.insert('goals', goal.toJson());
+    return goal;
   }
 
   Future<Goal> updateGoal(Goal goal) async {
-    final response = await _client
-        .from('goals')
-        .update(goal.toJson())
-        .eq('id', goal.id)
-        .select()
-        .single();
-    return Goal.fromJson(response);
+    await _db.update('goals', goal.toJson(), where: 'id = ?', whereArgs: [goal.id]);
+    return goal;
   }
 
   Future<void> deleteGoal(String goalId) async {
-    await _client.from('goals').delete().eq('id', goalId);
+    await _db.delete('goals', where: 'id = ?', whereArgs: [goalId]);
   }
 
   Future<List<SubTask>> getSubTasks(String goalId) async {
-    final response = await _client
-        .from('subtasks')
-        .select()
-        .eq('goal_id', goalId)
-        .order('order', ascending: true);
-    return (response as List)
-        .map((json) => SubTask.fromJson(json as Map<String, dynamic>))
-        .toList();
+    final rows = await _db.query('subtasks',
+        where: 'goal_id = ?', whereArgs: [goalId], orderBy: '"order" ASC');
+    return rows.map((j) => SubTask.fromJson(j)).toList();
   }
 
   Future<SubTask> createSubTask(SubTask task) async {
-    final response = await _client
-        .from('subtasks')
-        .insert(task.toJson())
-        .select()
-        .single();
-    return SubTask.fromJson(response);
+    await _db.insert('subtasks', task.toJson());
+    return task;
   }
 
   Future<SubTask> updateSubTask(SubTask task) async {
-    final response = await _client
-        .from('subtasks')
-        .update(task.toJson())
-        .eq('id', task.id)
-        .select()
-        .single();
-    return SubTask.fromJson(response);
+    await _db.update('subtasks', task.toJson(), where: 'id = ?', whereArgs: [task.id]);
+    return task;
   }
 
   Future<void> deleteSubTask(String taskId) async {
-    await _client.from('subtasks').delete().eq('id', taskId);
+    await _db.delete('subtasks', where: 'id = ?', whereArgs: [taskId]);
   }
 
   Future<int> getGoalsCount(String userId) async {
-    final response = await _client
-        .from('goals')
-        .select('id')
-        .eq('user_id', userId);
-    return (response as List).length;
+    final rows =
+        await _db.query('goals', where: 'user_id = ?', whereArgs: [userId], columns: ['id']);
+    return rows.length;
   }
 }
