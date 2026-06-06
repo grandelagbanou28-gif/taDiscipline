@@ -49,16 +49,20 @@ class _PinUnlockScreenState extends ConsumerState<PinUnlockScreen> {
   void _onDigit(String digit) {
     if (_pinController.text.length >= 6) return;
     _pinController.text += digit;
-    if (_pinController.text.length == 6) {
-      _verifyPin();
-    }
+    setState(() {});
   }
 
   void _onDelete() {
     if (_pinController.text.isNotEmpty) {
       _pinController.text = _pinController.text
           .substring(0, _pinController.text.length - 1);
+      setState(() {});
     }
+  }
+
+  Future<void> _onConfirm() async {
+    if (_pinController.text.length != 6) return;
+    await _verifyPin();
   }
 
   Future<void> _verifyPin() async {
@@ -152,8 +156,10 @@ class _PinUnlockScreenState extends ConsumerState<PinUnlockScreen> {
               const Spacer(),
               _Numpad(
                 compact: compact,
+                pinLength: _pinController.text.length,
                 onDigit: _onDigit,
                 onDelete: _onDelete,
+                onConfirm: _pinController.text.length == 6 ? _onConfirm : null,
               ),
               const SizedBox(height: 24),
             ],
@@ -166,13 +172,17 @@ class _PinUnlockScreenState extends ConsumerState<PinUnlockScreen> {
 
 class _Numpad extends StatelessWidget {
   final bool compact;
+  final int pinLength;
   final void Function(String) onDigit;
   final VoidCallback onDelete;
+  final VoidCallback? onConfirm;
 
   const _Numpad({
     this.compact = false,
+    this.pinLength = 0,
     required this.onDigit,
     required this.onDelete,
+    this.onConfirm,
   });
 
   @override
@@ -189,10 +199,16 @@ class _Numpad extends StatelessWidget {
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            SizedBox(width: compact ? 64 : 76),
+            _NumpadKey(label: '⌫', compact: compact, onTap: onDelete),
+            SizedBox(width: compact ? 8 : 12),
             _NumpadKey(label: '0', compact: compact, onTap: () => onDigit('0')),
             SizedBox(width: compact ? 8 : 12),
-            _NumpadKey(label: '⌫', compact: compact, onTap: onDelete),
+            _NumpadKey(
+              label: 'OK',
+              compact: compact,
+              onTap: onConfirm ?? () {},
+              highlight: pinLength == 6,
+            ),
           ],
         ),
       ],
@@ -225,40 +241,65 @@ class _NumpadRow extends StatelessWidget {
   }
 }
 
-class _NumpadKey extends StatelessWidget {
+class _NumpadKey extends StatefulWidget {
   final String label;
   final VoidCallback onTap;
   final bool compact;
+  final bool highlight;
 
   const _NumpadKey({
     required this.label,
     required this.onTap,
     this.compact = false,
+    this.highlight = false,
   });
 
   @override
+  State<_NumpadKey> createState() => _NumpadKeyState();
+}
+
+class _NumpadKeyState extends State<_NumpadKey> {
+  bool _pressed = false;
+
+  Color get _bgColor {
+    if (_pressed) return AppColors.primary.withValues(alpha: 0.3);
+    if (widget.highlight) return AppColors.primary.withValues(alpha: 0.2);
+    return AppColors.surface;
+  }
+
+  Color get _borderColor {
+    if (_pressed || widget.highlight) return AppColors.primary;
+    return AppColors.glassBorder;
+  }
+
+  Color get _textColor {
+    if (_pressed || widget.highlight) return AppColors.primary;
+    return AppColors.textPrimary;
+  }
+
+  @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
-        child: Container(
-          width: compact ? 64 : 76,
-          height: compact ? 48 : 56,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(16),
-            color: AppColors.surface,
-            border: Border.all(color: AppColors.glassBorder),
-          ),
-          child: Center(
-            child: Text(
-              label,
-              style: TextStyle(
-                fontSize: compact ? 24 : 28,
-                fontWeight: FontWeight.w500,
-                color: AppColors.textPrimary,
-              ),
+    return GestureDetector(
+      onTapDown: (_) => setState(() => _pressed = true),
+      onTapUp: (_) => setState(() => _pressed = false),
+      onTapCancel: () => setState(() => _pressed = false),
+      onTap: widget.onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 100),
+        width: widget.compact ? 64 : 76,
+        height: widget.compact ? 48 : 56,
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: _bgColor,
+          border: Border.all(color: _borderColor),
+        ),
+        child: Center(
+          child: Text(
+            widget.label,
+            style: TextStyle(
+              fontSize: widget.compact ? 24 : 28,
+              fontWeight: widget.highlight ? FontWeight.w700 : FontWeight.w500,
+              color: _textColor,
             ),
           ),
         ),
