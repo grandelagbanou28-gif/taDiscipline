@@ -2,11 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:apex/core/theme/app_colors.dart';
-import 'package:apex/core/constants/goal_categories.dart';
 import 'package:apex/shared/widgets/glass_card.dart';
-import 'package:apex/data/models/goal.dart';
-import 'package:apex/data/models/habit.dart';
-import 'package:apex/data/models/journal_entry.dart';
 import 'package:apex/features/search/providers/search_provider.dart';
 import 'package:apex/features/search/widgets/search_result_tile.dart';
 import 'package:apex/features/search/widgets/filter_chips.dart';
@@ -35,34 +31,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: TextField(
-          controller: _searchController,
-          focusNode: _focusNode,
-          autofocus: true,
-          onChanged: (v) =>
-              ref.read(searchProvider.notifier).setQuery(v),
-          style: const TextStyle(
-            color: AppColors.textPrimary,
-            fontSize: 16,
-          ),
-          decoration: InputDecoration(
-            hintText: 'Rechercher…',
-            hintStyle: const TextStyle(color: AppColors.textMuted),
-            border: InputBorder.none,
-            filled: false,
-            suffixIcon: state.query.isNotEmpty
-                ? IconButton(
-                    icon: const Icon(Icons.close,
-                        size: 20, color: AppColors.textMuted),
-                    onPressed: () {
-                      _searchController.clear();
-                      ref.read(searchProvider.notifier).setQuery('');
-                      _focusNode.requestFocus();
-                    },
-                  )
-                : null,
-          ),
-        ),
+        title: const Text('Recherche'),
       ),
       body: Column(
         children: [
@@ -80,6 +49,54 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
                     : _resultsList(state),
           ),
         ],
+      ),
+      bottomNavigationBar: _buildSearchBar(state),
+    );
+  }
+
+  Widget _buildSearchBar(SearchState state) {
+    final bottomInset = MediaQuery.of(context).padding.bottom;
+    return Container(
+      padding: EdgeInsets.fromLTRB(16, 12, 16, 12 + bottomInset),
+      decoration: BoxDecoration(
+        color: AppColors.surface,
+        border: Border(
+          top: BorderSide(color: AppColors.glassBorder),
+        ),
+      ),
+      child: GlassCard(
+        padding: const EdgeInsets.symmetric(horizontal: 16),
+        child: TextField(
+          controller: _searchController,
+          focusNode: _focusNode,
+          autofocus: true,
+          onChanged: (v) =>
+              ref.read(searchProvider.notifier).setQuery(v),
+          style: const TextStyle(
+            color: AppColors.textPrimary,
+            fontSize: 16,
+          ),
+          decoration: InputDecoration(
+            hintText: 'Rechercher objectifs, habitudes, journal…',
+            hintStyle: const TextStyle(color: AppColors.textMuted),
+            border: InputBorder.none,
+            prefixIcon: const Icon(
+              Icons.search_rounded,
+              color: AppColors.textMuted,
+            ),
+            suffixIcon: state.query.isNotEmpty
+                ? IconButton(
+                    icon: const Icon(Icons.close,
+                        size: 20, color: AppColors.textMuted),
+                    onPressed: () {
+                      _searchController.clear();
+                      ref.read(searchProvider.notifier).setQuery('');
+                      _focusNode.requestFocus();
+                    },
+                  )
+                : null,
+          ),
+        ),
       ),
     );
   }
@@ -119,7 +136,49 @@ class _SearchScreenState extends ConsumerState<SearchScreen> {
               color: AppColors.textSecondary,
             ),
           ),
+          const SizedBox(height: 24),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            alignment: WrapAlignment.center,
+            children: [
+              _suggestionChip(Icons.flag_outlined, 'Objectifs',
+                  () => ref.read(searchProvider.notifier).setFilter(SearchFilter.goals)),
+              _suggestionChip(Icons.loop, 'Habitudes',
+                  () => ref.read(searchProvider.notifier).setFilter(SearchFilter.habits)),
+              _suggestionChip(Icons.book_outlined, 'Journal',
+                  () => ref.read(searchProvider.notifier).setFilter(SearchFilter.journal)),
+            ],
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _suggestionChip(IconData icon, String label, VoidCallback onTap) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(16),
+          color: AppColors.surface,
+          border: Border.all(color: AppColors.glassBorder),
+        ),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 14, color: AppColors.textSecondary),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: const TextStyle(
+                fontSize: 13,
+                color: AppColors.textSecondary,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
