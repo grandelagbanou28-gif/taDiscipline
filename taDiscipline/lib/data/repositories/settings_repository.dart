@@ -1,43 +1,24 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ta_discipline/data/models/journal_entry.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/data/local/local_database.dart';
+import 'package:apex/data/models/journal_entry.dart';
 
 class SettingsRepository {
-  final SupabaseClient _client;
-
-  SettingsRepository() : _client = AppSupabase.client;
+  final LocalDatabase _db = LocalDatabase();
 
   Future<UserSettings> getSettings(String userId) async {
-    final response = await _client
-        .from('user_settings')
-        .select()
-        .eq('user_id', userId)
-        .maybeSingle();
-    if (response == null) {
-      return _createDefaultSettings(userId);
-    }
-    return UserSettings.fromJson(response);
+    final row = await _db.querySingle('user_settings',
+        where: 'user_id = ?', whereArgs: [userId]);
+    if (row == null) return _createDefaultSettings(userId);
+    return UserSettings.fromJson(row);
   }
 
   Future<UserSettings> updateSettings(UserSettings settings) async {
-    final response = await _client
-        .from('user_settings')
-        .upsert(settings.toJson(), onConflict: 'user_id')
-        .select()
-        .single();
-    return UserSettings.fromJson(response);
+    await _db.insert('user_settings', settings.toJson());
+    return settings;
   }
 
-  Future<UserSettings> _createDefaultSettings(String userId) async {
-    final settings = UserSettings(
-      id: '',
-      userId: userId,
-    );
-    final response = await _client
-        .from('user_settings')
-        .insert(settings.toJson())
-        .select()
-        .single();
-    return UserSettings.fromJson(response);
+  UserSettings _createDefaultSettings(String userId) {
+    final settings = UserSettings(id: '', userId: userId);
+    _db.insert('user_settings', settings.toJson());
+    return settings;
   }
 }
