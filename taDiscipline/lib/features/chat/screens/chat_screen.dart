@@ -106,7 +106,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
         createdAt: DateTime.now(),
       ));
 
-      // Appeler DelAide IA
+      // Appeler Apex IA
       final history = _messages
           .where((m) => m.role != 'system')
           .map((m) => ChatMessage(
