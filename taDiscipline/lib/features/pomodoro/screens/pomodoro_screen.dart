@@ -1,9 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:apex/core/theme/app_colors.dart';
 import 'package:apex/core/constants/app_constants.dart';
 import 'package:apex/shared/widgets/glass_card.dart';
+import 'package:apex/core/services/notification_service.dart';
 import 'package:apex/data/repositories/pomodoro_repository.dart';
 import 'package:apex/data/repositories/plan_repository.dart';
 import 'package:apex/data/models/journal_entry.dart';
@@ -43,6 +46,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
   String? _selectedTaskId;
   final _focusController = TextEditingController();
   bool _showQuickFocus = false;
+  final AudioPlayer _player = AudioPlayer();
 
   final _sounds = ['Silence', 'Pluie', 'Nature', 'Lo-fi', 'Café'];
 
@@ -66,8 +70,20 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
   @override
   void dispose() {
     _timer?.cancel();
+    _player.dispose();
     _focusController.dispose();
     super.dispose();
+  }
+
+  Future<void> _playAlarm() async {
+    try {
+      await _player.setAsset('assets/sounds/complete.mp3');
+      await _player.setVolume(1.0);
+      await _player.seek(Duration.zero);
+      await _player.play();
+      HapticFeedback.heavyImpact();
+      await NotificationService().showPomodoroComplete();
+    } catch (_) {}
   }
 
   Future<void> _startTimer() async {
@@ -94,6 +110,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
       } else {
         _timer?.cancel();
         _isRunning = false;
+        _playAlarm();
         if (!_isBreak) {
           _pomodoroCount++;
           _completeSession();
