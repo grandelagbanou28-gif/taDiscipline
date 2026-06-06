@@ -1,15 +1,15 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
 import 'package:apex/core/theme/app_colors.dart';
 import 'package:apex/shared/widgets/glass_card.dart';
-import 'package:apex/shared/widgets/verified_badge.dart';
 import 'package:apex/data/local/app_session.dart';
 import 'package:apex/data/models/user_profile.dart';
 import 'package:apex/data/repositories/settings_repository.dart';
 import 'package:apex/data/models/journal_entry.dart';
 import 'package:apex/features/auth/providers/auth_provider.dart';
-import 'package:apex/features/settings/providers/verified_provider.dart';
 import 'package:apex/features/security/services/biometric_service.dart';
 import 'package:apex/data/repositories/auth_repository.dart';
 
@@ -32,6 +32,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _biometricEnabled = false;
   bool _sleepResetEnabled = false;
   String? _sleepTime;
+  final _firstNameController = TextEditingController();
+  final _lastNameController = TextEditingController();
+  final ImagePicker _picker = ImagePicker();
+  String? _avatarPath;
 
   @override
   void initState() {
@@ -52,9 +56,42 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
           _biometricEnabled = profile?.biometricEnabled ?? false;
           _sleepResetEnabled = settings.sleepResetEnabled;
           _sleepTime = settings.sleepTime ?? '22:00';
+          _firstNameController.text = profile?.firstName ?? '';
+          _lastNameController.text = profile?.lastName ?? '';
+          _avatarPath = profile?.avatarUrl;
         });
       }
     } catch (_) {}
+  }
+
+  @override
+  void dispose() {
+    _firstNameController.dispose();
+    _lastNameController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _pickAvatar() async {
+    final file = await _picker.pickImage(source: ImageSource.gallery, maxWidth: 512);
+    if (file != null) {
+      setState(() => _avatarPath = file.path);
+    }
+  }
+
+  Future<void> _saveProfile() async {
+    final userId = AppSession.userId;
+    if (userId == null) return;
+    await AppSession.updateProfileNameAndPhoto(
+      firstName: _firstNameController.text.trim(),
+      lastName: _lastNameController.text.trim(),
+      avatarUrl: _avatarPath,
+    );
+    ref.invalidate(authProvider);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Profil mis à jour ✅'), backgroundColor: AppColors.success),
+      );
+    }
   }
 
   Future<void> _toggleBiometric(bool value) async {
@@ -114,7 +151,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final profile = ref.watch(authProvider).valueOrNull;
-    final isVerified = ref.watch(verifiedProvider).valueOrNull ?? false;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Paramètres')),
@@ -122,63 +158,127 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         padding: const EdgeInsets.all(16),
         children: [
           GlassCard(
-            child: Row(
+            child: Column(
               children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(16),
-                    gradient: const LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryDark],
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      _getInitial(profile),
-                      style: const TextStyle(
-                        fontSize: 24,
-                        fontWeight: FontWeight.w700,
-                        color: AppColors.textPrimary,
-                      ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  child: GestureDetector(
+                    onTap: _pickAvatar,
+                    child: Stack(
+                      children: [
+                        Container(
+                          width: 72,
+                          height: 72,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            gradient: _avatarPath == null
+                                ? const LinearGradient(
+                                    colors: [AppColors.primary, AppColors.primaryDark],
+                                  )
+                                : null,
+                            image: _avatarPath != null
+                                ? DecorationImage(
+                                    image: FileImage(File(_avatarPath!)),
+                                    fit: BoxFit.cover,
+                                  )
+                                : null,
+                          ),
+                          child: _avatarPath == null
+                              ? Center(
+                                  child: Text(
+                                    _getInitial(profile),
+                                    style: const TextStyle(
+                                      fontSize: 28,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                )
+                              : null,
+                        ),
+                        Positioned(
+                          bottom: 0,
+                          right: 0,
+                          child: Container(
+                            width: 24,
+                            height: 24,
+                            decoration: const BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: AppColors.primary,
+                            ),
+                            child: const Icon(Icons.edit, size: 14, color: Colors.white),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Flexible(
-                            child: Text(
-                              _getDisplayName(profile),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                fontWeight: FontWeight.w600,
-                                color: AppColors.textPrimary,
-                              ),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                          if (isVerified) ...[
-                            const SizedBox(width: 6),
-                            const VerifiedBadge(),
-                          ],
-                        ],
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: TextField(
+                    controller: _firstNameController,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      color: AppColors.textPrimary,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Prénom',
+                      labelStyle: TextStyle(color: AppColors.textMuted),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: AppColors.glassBorder),
                       ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Membre depuis ${profile?.createdAt.day ?? "..."}',
-                        style: const TextStyle(
-                          fontSize: 13,
-                          color: AppColors.textSecondary,
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: AppColors.primary),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: TextField(
+                    controller: _lastNameController,
+                    style: const TextStyle(
+                      fontSize: 15,
+                      color: AppColors.textPrimary,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Nom',
+                      labelStyle: TextStyle(color: AppColors.textMuted),
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: AppColors.glassBorder),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: AppColors.primary),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 12),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        gradient: const LinearGradient(
+                          colors: [AppColors.primary, AppColors.primaryLight],
                         ),
                       ),
-                    ],
+                      child: TextButton(
+                        onPressed: _saveProfile,
+                        child: const Text(
+                          'Enregistrer',
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
+                const SizedBox(height: 16),
               ],
             ),
           ),
@@ -410,14 +510,10 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
     );
   }
 
-  String _getDisplayName(UserProfile? profile) {
-    if (profile?.displayName.isNotEmpty == true) return profile!.displayName;
-    return 'Utilisateur';
-  }
-
   String _getInitial(UserProfile? profile) {
-    final name = _getDisplayName(profile);
-    return name.isNotEmpty ? name[0].toUpperCase() : '?';
+    if (profile?.firstName?.isNotEmpty == true) return profile!.firstName![0].toUpperCase();
+    if (profile?.lastName?.isNotEmpty == true) return profile!.lastName![0].toUpperCase();
+    return '?';
   }
 }
 

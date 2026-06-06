@@ -52,24 +52,11 @@ class MainShell extends StatelessWidget {
           ],
         ),
       ),
-      floatingActionButton: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          FloatingActionButton.small(
-            heroTag: 'chat',
-            onPressed: () => context.push('/chat'),
-            backgroundColor: AppColors.primary,
-            child: const Icon(Icons.auto_awesome, color: AppColors.textPrimary),
-          ),
-          const SizedBox(width: 8),
-          FloatingActionButton.small(
-            heroTag: 'settings',
-            onPressed: () => context.push('/settings'),
-            backgroundColor: AppColors.surface,
-            child:
-                const Icon(Icons.settings, color: AppColors.textSecondary),
-          ),
-        ],
+      floatingActionButton: FloatingActionButton.small(
+        heroTag: 'chat',
+        onPressed: () => context.push('/chat'),
+        backgroundColor: AppColors.primary,
+        child: const Icon(Icons.auto_awesome, color: AppColors.textPrimary),
       ),
     );
   }

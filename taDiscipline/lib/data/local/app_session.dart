@@ -44,6 +44,20 @@ class AppSession {
     await updateProfile(updated);
   }
 
+  static Future<void> updateProfileNameAndPhoto({
+    required String firstName,
+    String? lastName,
+    String? avatarUrl,
+  }) async {
+    final user = await ensureUser();
+    final updated = user.copyWith(
+      firstName: firstName,
+      lastName: lastName,
+      avatarUrl: avatarUrl,
+    );
+    await updateProfile(updated);
+  }
+
   static Future<void> updatePinHash({
     required String userId,
     required String pinHash,

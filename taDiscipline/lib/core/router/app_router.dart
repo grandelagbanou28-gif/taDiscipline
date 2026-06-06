@@ -21,7 +21,6 @@ import 'package:apex/features/chat/screens/chat_screen.dart';
 import 'package:apex/features/settings/screens/settings_screen.dart';
 import 'package:apex/features/settings/screens/ping_schedule_screen.dart';
 import 'package:apex/features/widget/screens/widget_config_screen.dart';
-import 'package:apex/features/stories/screens/story_create_screen.dart';
 import 'package:apex/features/search/screens/search_screen.dart';
 
 final GoRouter appRouter = GoRouter(
@@ -145,11 +144,6 @@ final GoRouter appRouter = GoRouter(
           path: '/chat',
           name: 'chat',
           builder: (context, state) => const ChatScreen(),
-        ),
-        GoRoute(
-          path: '/stories/create',
-          name: 'storyCreate',
-          builder: (context, state) => const StoryCreateScreen(),
         ),
         GoRoute(
           path: '/search',

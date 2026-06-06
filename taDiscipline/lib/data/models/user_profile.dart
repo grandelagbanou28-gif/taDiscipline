@@ -1,6 +1,8 @@
 class UserProfile {
   final String id;
-  final String displayName;
+  final String _displayName;
+  final String? firstName;
+  final String? lastName;
   final String? avatarUrl;
   final String? pinHash;
   final String? pinSalt;
@@ -12,7 +14,9 @@ class UserProfile {
 
   const UserProfile({
     required this.id,
-    required this.displayName,
+    required String displayName,
+    this.firstName,
+    this.lastName,
     this.avatarUrl,
     this.pinHash,
     this.pinSalt,
@@ -21,11 +25,20 @@ class UserProfile {
     this.isVerified = false,
     required this.createdAt,
     required this.updatedAt,
-  });
+  }) : _displayName = displayName;
+
+  String get displayName {
+    if (firstName != null && lastName != null) {
+      return '$firstName $lastName';
+    }
+    return firstName ?? lastName ?? _displayName;
+  }
 
   Map<String, dynamic> toJson() => {
         'id': id,
-        'display_name': displayName,
+        'display_name': _displayName,
+        'first_name': firstName,
+        'last_name': lastName,
         'avatar_url': avatarUrl,
         'pin_hash': pinHash,
         'pin_salt': pinSalt,
@@ -39,6 +52,8 @@ class UserProfile {
   factory UserProfile.fromJson(Map<String, dynamic> json) => UserProfile(
         id: json['id'] as String,
         displayName: json['display_name'] as String? ?? '',
+        firstName: json['first_name'] as String?,
+        lastName: json['last_name'] as String?,
         avatarUrl: json['avatar_url'] as String?,
         pinHash: json['pin_hash'] as String?,
         pinSalt: json['pin_salt'] as String?,
@@ -51,6 +66,8 @@ class UserProfile {
 
   UserProfile copyWith({
     String? displayName,
+    String? firstName,
+    String? lastName,
     String? avatarUrl,
     String? pinHash,
     String? pinSalt,
@@ -60,7 +77,9 @@ class UserProfile {
   }) =>
       UserProfile(
         id: id,
-        displayName: displayName ?? this.displayName,
+        displayName: displayName ?? _displayName,
+        firstName: firstName ?? this.firstName,
+        lastName: lastName ?? this.lastName,
         avatarUrl: avatarUrl ?? this.avatarUrl,
         pinHash: pinHash ?? this.pinHash,
         pinSalt: pinSalt ?? this.pinSalt,

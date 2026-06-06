@@ -29,6 +29,8 @@ class LocalDatabase {
       CREATE TABLE IF NOT EXISTS profiles (
         id TEXT PRIMARY KEY,
         display_name TEXT NOT NULL,
+        first_name TEXT,
+        last_name TEXT,
         avatar_url TEXT,
         pin_hash TEXT,
         pin_salt TEXT,
@@ -39,6 +41,8 @@ class LocalDatabase {
         updated_at TEXT NOT NULL
       )
     ''');
+    try { await db.execute('ALTER TABLE profiles ADD COLUMN first_name TEXT'); } catch (_) {}
+    try { await db.execute('ALTER TABLE profiles ADD COLUMN last_name TEXT'); } catch (_) {}
     await db.execute('''
       CREATE TABLE IF NOT EXISTS habits (
         id TEXT PRIMARY KEY,
@@ -181,16 +185,6 @@ class LocalDatabase {
         joined_at TEXT NOT NULL,
         synced_at TEXT,
         UNIQUE(challenge_id, user_id)
-      )
-    ''');
-    await db.execute('''
-      CREATE TABLE IF NOT EXISTS challenge_messages (
-        id TEXT PRIMARY KEY,
-        challenge_id TEXT NOT NULL,
-        user_id TEXT NOT NULL,
-        content TEXT NOT NULL,
-        created_at TEXT NOT NULL,
-        synced_at TEXT
       )
     ''');
     await db.execute('''

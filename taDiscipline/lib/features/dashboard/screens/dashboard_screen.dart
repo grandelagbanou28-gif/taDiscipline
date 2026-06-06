@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,7 +12,6 @@ import 'package:apex/features/dashboard/providers/dashboard_provider.dart';
 import 'package:apex/features/auth/providers/auth_provider.dart';
 import 'package:apex/features/settings/providers/verified_provider.dart';
 import 'package:apex/data/models/user_profile.dart';
-import 'package:apex/features/stories/screens/stories_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -51,7 +51,6 @@ class DashboardScreen extends ConsumerWidget {
                   isVerified: isVerified,
                 ),
                 const SizedBox(height: 16),
-                const StoriesScreen(),
                 const SizedBox(height: 20),
                 _DailyQuoteCard(quote: data.quote),
                 const SizedBox(height: 20),
@@ -110,31 +109,46 @@ class _UserGreeting extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final displayName = profile?.displayName.isNotEmpty == true
-        ? profile!.displayName
+    final firstName = profile?.firstName?.isNotEmpty == true
+        ? profile!.firstName!
         : 'Utilisateur';
+    final avatarUrl = profile?.avatarUrl;
+    final initial = (profile?.firstName?.isNotEmpty == true
+            ? profile!.firstName!
+            : 'U')
+        .toUpperCase()[0];
 
     return Row(
       children: [
         Container(
-          width: 40,
-          height: 40,
+          width: 44,
+          height: 44,
           decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(12),
-            gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.primaryDark],
-            ),
+            borderRadius: BorderRadius.circular(14),
+            gradient: avatarUrl == null
+                ? const LinearGradient(
+                    colors: [AppColors.primary, AppColors.primaryDark],
+                  )
+                : null,
+            image: avatarUrl != null
+                ? DecorationImage(
+                    image: FileImage(File(avatarUrl)),
+                    fit: BoxFit.cover,
+                  )
+                : null,
           ),
-          child: Center(
-            child: Text(
-              displayName[0].toUpperCase(),
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w700,
-                color: AppColors.textPrimary,
-              ),
-            ),
-          ),
+          child: avatarUrl == null
+              ? Center(
+                  child: Text(
+                    initial,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                )
+              : null,
         ),
         const SizedBox(width: 12),
         Expanded(
@@ -142,7 +156,7 @@ class _UserGreeting extends StatelessWidget {
             children: [
               Flexible(
                 child: Text(
-                  'Bonjour, $displayName',
+                  'Bienvenue, $firstName',
                   style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.w600,
@@ -511,12 +525,6 @@ class _QuickActionsRow extends StatelessWidget {
               onTap: () => context.push('/search'),
             ),
             const SizedBox(width: 12),
-            _QuickAction(
-              icon: Icons.auto_stories,
-              label: 'Story',
-              color: AppColors.accent,
-              onTap: () => context.push('/stories/create'),
-            ),
           ],
         ),
       ],
