@@ -1,12 +1,14 @@
 import 'dart:convert';
 import 'dart:math';
 import 'package:http/http.dart' as http;
+import 'package:uuid/uuid.dart';
 import 'package:apex/core/constants/app_constants.dart';
 import 'package:apex/data/local/local_database.dart';
 import 'package:apex/data/models/journal_entry.dart';
 
 class ChatRepository {
   final LocalDatabase _db = LocalDatabase();
+  final Uuid _uuid = const Uuid();
 
   static const String _systemPrompt = '''Tu es Apex IA, l'assistant intelligent tout-en-un de l'application Apex. Tu es propulsé par Grok (xAI).
 
@@ -57,13 +59,6 @@ Outils disponibles :
     required Map<String, dynamic> userContext,
   }) async {
     try {
-      await _db.insert('chat_messages', {
-        'user_id': userId,
-        'role': 'user',
-        'content': message,
-        'created_at': DateTime.now().toIso8601String(),
-      });
-
       final grokMessages = [
         {'role': 'system', 'content': _systemPrompt},
         ...history.map((m) => {'role': m.role, 'content': m.content}),
@@ -138,6 +133,7 @@ Outils disponibles :
       }
 
       await _db.insert('chat_messages', {
+        'id': _uuid.v4(),
         'user_id': userId,
         'role': 'assistant',
         'content': content,

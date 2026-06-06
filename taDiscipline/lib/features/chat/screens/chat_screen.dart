@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:uuid/uuid.dart';
 import 'package:apex/core/theme/app_colors.dart';
 import 'package:apex/data/repositories/chat_repository.dart';
 import 'package:apex/data/repositories/goal_repository.dart';
@@ -96,10 +97,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
       final habits = await habitRepo.getHabits(userId);
 
       final chatRepo = ChatRepository();
+      final uuid = const Uuid();
 
       // Sauvegarder le message utilisateur
       await chatRepo.saveMessage(ChatMessage(
-        id: '',
+        id: uuid.v4(),
         userId: userId,
         role: 'user',
         content: text,
