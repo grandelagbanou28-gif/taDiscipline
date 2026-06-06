@@ -90,8 +90,9 @@ class _ApexAppState extends ConsumerState<ApexApp>
   @override
   Widget build(BuildContext context) {
     final locale = ref.watch(localeProvider);
-    return GestureDetector(
-      onTap: () => _autoLockService.resetTimer(),
+    return Listener(
+      onPointerDown: (_) => _autoLockService.resetTimer(),
+      behavior: HitTestBehavior.translucent,
       child: MaterialApp.router(
         title: AppConstants.appName,
         locale: locale,

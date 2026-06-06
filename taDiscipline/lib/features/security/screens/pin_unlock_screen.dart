@@ -80,44 +80,47 @@ class _PinUnlockScreenState extends ConsumerState<PinUnlockScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final compact = screenHeight < 700;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24),
+          padding: EdgeInsets.all(compact ? 16 : 24),
           child: Column(
             children: [
-              const SizedBox(height: 80),
+              SizedBox(height: compact ? 40 : 80),
               Container(
-                width: 80,
-                height: 80,
+                width: compact ? 64 : 80,
+                height: compact ? 64 : 80,
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(20),
                   gradient: const LinearGradient(
                     colors: [AppColors.primary, AppColors.primaryDark],
                   ),
                 ),
-                child: const Center(
+                child: Center(
                   child: Text(
-                    'D',
+                    'A',
                     style: TextStyle(
-                      fontSize: 40,
+                      fontSize: compact ? 32 : 40,
                       fontWeight: FontWeight.w700,
                       color: AppColors.textPrimary,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              const Text(
+              SizedBox(height: compact ? 12 : 16),
+              Text(
                 'Apex',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: compact ? 24 : 28,
                   fontWeight: FontWeight.w700,
                   color: AppColors.textPrimary,
                   fontFamily: 'Space Grotesk',
                 ),
               ),
-              const SizedBox(height: 48),
+              SizedBox(height: compact ? 24 : 48),
               const Text(
                 'Code PIN',
                 style: TextStyle(
@@ -125,14 +128,14 @@ class _PinUnlockScreenState extends ConsumerState<PinUnlockScreen> {
                   color: AppColors.textSecondary,
                 ),
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: compact ? 16 : 24),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: List.generate(6, (i) {
                   final filled = i < _pinController.text.length;
                   return Container(
-                    width: 16,
-                    height: 16,
+                    width: compact ? 14 : 16,
+                    height: compact ? 14 : 16,
                     margin: const EdgeInsets.symmetric(horizontal: 8),
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
@@ -148,10 +151,11 @@ class _PinUnlockScreenState extends ConsumerState<PinUnlockScreen> {
               ),
               const Spacer(),
               _Numpad(
+                compact: compact,
                 onDigit: _onDigit,
                 onDelete: _onDelete,
               ),
-              const Spacer(),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -161,38 +165,34 @@ class _PinUnlockScreenState extends ConsumerState<PinUnlockScreen> {
 }
 
 class _Numpad extends StatelessWidget {
+  final bool compact;
   final void Function(String) onDigit;
   final VoidCallback onDelete;
 
-  const _Numpad({required this.onDigit, required this.onDelete});
+  const _Numpad({
+    this.compact = false,
+    required this.onDigit,
+    required this.onDelete,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
-        _NumpadRow(
-          children: ['1', '2', '3'],
-          onDigit: onDigit,
-        ),
-        const SizedBox(height: 12),
-        _NumpadRow(
-          children: ['4', '5', '6'],
-          onDigit: onDigit,
-        ),
-        const SizedBox(height: 12),
-        _NumpadRow(
-          children: ['7', '8', '9'],
-          onDigit: onDigit,
-        ),
-        const SizedBox(height: 12),
+        _NumpadRow(children: ['1', '2', '3'], compact: compact, onDigit: onDigit),
+        SizedBox(height: compact ? 8 : 12),
+        _NumpadRow(children: ['4', '5', '6'], compact: compact, onDigit: onDigit),
+        SizedBox(height: compact ? 8 : 12),
+        _NumpadRow(children: ['7', '8', '9'], compact: compact, onDigit: onDigit),
+        SizedBox(height: compact ? 8 : 12),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const SizedBox(width: 76),
-            _NumpadKey(label: '0', onTap: () => onDigit('0')),
-            const SizedBox(width: 12),
-            _NumpadKey(label: '⌫', onTap: onDelete),
+            SizedBox(width: compact ? 64 : 76),
+            _NumpadKey(label: '0', compact: compact, onTap: () => onDigit('0')),
+            SizedBox(width: compact ? 8 : 12),
+            _NumpadKey(label: '⌫', compact: compact, onTap: onDelete),
           ],
         ),
       ],
@@ -202,9 +202,14 @@ class _Numpad extends StatelessWidget {
 
 class _NumpadRow extends StatelessWidget {
   final List<String> children;
+  final bool compact;
   final void Function(String) onDigit;
 
-  const _NumpadRow({required this.children, required this.onDigit});
+  const _NumpadRow({
+    required this.children,
+    this.compact = false,
+    required this.onDigit,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -212,8 +217,8 @@ class _NumpadRow extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: children.map((label) {
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 6),
-          child: _NumpadKey(label: label, onTap: () => onDigit(label)),
+          padding: EdgeInsets.symmetric(horizontal: compact ? 4 : 6),
+          child: _NumpadKey(label: label, compact: compact, onTap: () => onDigit(label)),
         );
       }).toList(),
     );
@@ -223,8 +228,13 @@ class _NumpadRow extends StatelessWidget {
 class _NumpadKey extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
+  final bool compact;
 
-  const _NumpadKey({required this.label, required this.onTap});
+  const _NumpadKey({
+    required this.label,
+    required this.onTap,
+    this.compact = false,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -234,8 +244,8 @@ class _NumpadKey extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Container(
-          width: 76,
-          height: 56,
+          width: compact ? 64 : 76,
+          height: compact ? 48 : 56,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             color: AppColors.surface,
@@ -244,8 +254,9 @@ class _NumpadKey extends StatelessWidget {
           child: Center(
             child: Text(
               label,
-              style: const TextStyle(
-                fontSize: 28,
+              style: TextStyle(
+                fontSize: compact ? 24 : 28,
+                fontWeight: FontWeight.w500,
                 color: AppColors.textPrimary,
               ),
             ),
@@ -255,3 +266,5 @@ class _NumpadKey extends StatelessWidget {
     );
   }
 }
+
+
