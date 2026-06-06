@@ -333,7 +333,7 @@ class _MessageBubble extends StatelessWidget {
                 ),
               ),
               child: const Center(
-                child: Text('D',
+                child: Text('A',
                     style: TextStyle(
                         color: Colors.white,
                         fontSize: 12,
