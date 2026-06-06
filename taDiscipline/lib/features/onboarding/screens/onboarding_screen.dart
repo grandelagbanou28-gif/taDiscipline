@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:apex/core/theme/app_colors.dart';
 import 'package:apex/shared/widgets/glass_card.dart';
+import 'package:apex/features/security/services/pin_service.dart';
+import 'package:apex/data/repositories/auth_repository.dart';
+import 'package:apex/data/local/app_session.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -13,6 +16,22 @@ class OnboardingScreen extends StatefulWidget {
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final _pageController = PageController();
   int _currentPage = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkExistingPin();
+  }
+
+  Future<void> _checkExistingPin() async {
+    final userId = AppSession.userId;
+    if (userId == null) return;
+    final service = PinService(AuthRepository());
+    await service.initialize(userId);
+    if (service.hasPin && mounted) {
+      context.go('/pin-unlock');
+    }
+  }
 
   final _steps = [
     _OnboardingStep(
@@ -148,7 +167,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         : 'Suivant',
                     onPressed: () {
                       if (_currentPage == _steps.length - 1) {
-                        context.go('/register');
+                        context.go('/pin-setup');
                       } else {
                         _pageController.nextPage(
                           duration: const Duration(milliseconds: 400),
@@ -160,7 +179,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   const SizedBox(height: 12),
                   if (_currentPage < _steps.length - 1)
                     TextButton(
-                      onPressed: () => context.go('/register'),
+                      onPressed: () => context.go('/pin-setup'),
                       child: const Text(
                         'Passer',
                         style: TextStyle(color: AppColors.textMuted),
