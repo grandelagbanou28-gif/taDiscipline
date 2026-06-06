@@ -6,10 +6,13 @@ import 'package:apex/core/theme/app_theme.dart';
 import 'package:apex/core/theme/app_colors.dart';
 import 'package:apex/core/router/app_router.dart';
 import 'package:apex/data/local/app_session.dart';
+import 'package:apex/data/repositories/settings_repository.dart';
 import 'package:apex/features/auth/providers/auth_provider.dart';
 import 'package:apex/features/security/services/auto_lock_service.dart';
 import 'package:apex/features/security/services/panic_service.dart';
 import 'package:apex/features/security/screens/pin_unlock_screen.dart';
+import 'package:apex/features/settings/providers/locale_provider.dart';
+import 'package:apex/l10n/app_localizations.dart';
 
 class ApexApp extends ConsumerStatefulWidget {
   const ApexApp({super.key});
@@ -47,6 +50,13 @@ class _ApexAppState extends ConsumerState<ApexApp>
 
   Future<void> _restoreSession() async {
     await ref.read(authProvider.notifier).tryRestoreSession();
+    final userId = AppSession.userId;
+    if (userId != null) {
+      try {
+        final settings = await SettingsRepository().getSettings(userId);
+        if (mounted) ref.read(localeProvider.notifier).setLocale(settings.language);
+      } catch (_) {}
+    }
     if (mounted) {
       setState(() => _initialized = true);
     }
@@ -79,13 +89,17 @@ class _ApexAppState extends ConsumerState<ApexApp>
 
   @override
   Widget build(BuildContext context) {
+    final locale = ref.watch(localeProvider);
     return GestureDetector(
       onTap: () => _autoLockService.resetTimer(),
       child: MaterialApp.router(
         title: AppConstants.appName,
+        locale: locale,
         debugShowCheckedModeBanner: false,
         theme: AppTheme.darkTheme,
         routerConfig: appRouter,
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
         builder: (context, child) {
           if (!_initialized) {
             return const Scaffold(
@@ -109,10 +123,6 @@ class _ApexAppState extends ConsumerState<ApexApp>
           }
           return child!;
         },
-        localizationsDelegates: const [
-          DefaultMaterialLocalizations.delegate,
-          DefaultWidgetsLocalizations.delegate,
-        ],
       ),
     );
   }

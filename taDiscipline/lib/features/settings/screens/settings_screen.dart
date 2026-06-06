@@ -10,6 +10,7 @@ import 'package:apex/data/models/user_profile.dart';
 import 'package:apex/data/repositories/settings_repository.dart';
 import 'package:apex/data/models/journal_entry.dart';
 import 'package:apex/features/auth/providers/auth_provider.dart';
+import 'package:apex/features/settings/providers/locale_provider.dart';
 import 'package:apex/features/security/services/biometric_service.dart';
 import 'package:apex/data/repositories/auth_repository.dart';
 
@@ -380,6 +381,41 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                   );
                 },
                 activeColor: AppColors.primary,
+              ),
+            ),
+          ),
+          const SizedBox(height: 24),
+
+          // Langue
+          const Text(
+            'Langue / Language',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.w600,
+              color: AppColors.textPrimary,
+            ),
+          ),
+          const SizedBox(height: 12),
+          GlassCard(
+            child: _SettingTile(
+              icon: Icons.language,
+              title: 'Langue',
+              subtitle: 'Français / English / Русский',
+              trailing: DropdownButton<String>(
+                value: ref.watch(localeProvider).languageCode,
+                underline: const SizedBox(),
+                dropdownColor: AppColors.surface,
+                style: const TextStyle(color: AppColors.textPrimary),
+                items: const [
+                  DropdownMenuItem(value: 'fr', child: Text('Français')),
+                  DropdownMenuItem(value: 'en', child: Text('English')),
+                  DropdownMenuItem(value: 'ru', child: Text('Русский')),
+                ],
+                onChanged: (v) {
+                  if (v != null) {
+                    ref.read(localeProvider.notifier).setLocale(v);
+                  }
+                },
               ),
             ),
           ),
