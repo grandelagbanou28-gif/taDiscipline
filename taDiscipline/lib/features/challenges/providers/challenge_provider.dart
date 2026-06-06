@@ -1,8 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ta_discipline/data/models/challenge.dart';
-import 'package:ta_discipline/data/repositories/challenge_repository.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/data/models/challenge.dart';
+import 'package:apex/data/repositories/challenge_repository.dart';
+import 'package:apex/data/local/app_session.dart';
 
 class ChallengeState {
   final List<Challenge> publicChallenges;
@@ -39,7 +39,7 @@ class ChallengeNotifier extends StateNotifier<ChallengeState> {
   Future<void> loadChallenges() async {
     state = state.copyWith(isLoading: true, error: null);
     try {
-      final userId = AppSupabase.currentUser?.id;
+      final userId = AppSession.userId;
       final results = await Future.wait([
         _repo.getPublicChallenges(),
         if (userId != null) _repo.getMyChallenges(userId) else Future.value([]),
@@ -69,7 +69,7 @@ class ChallengeNotifier extends StateNotifier<ChallengeState> {
   }
 
   Future<void> joinChallenge(String challengeId) async {
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return;
     try {
       await _repo.joinChallenge(challengeId, userId);
@@ -88,7 +88,7 @@ class ChallengeNotifier extends StateNotifier<ChallengeState> {
   }
 
   Future<void> leaveChallenge(String challengeId) async {
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return;
     try {
       await _repo.leaveChallenge(challengeId, userId);
@@ -121,7 +121,7 @@ final challengeParticipantsProvider =
 
 final challengeIsParticipantProvider =
     FutureProvider.family<bool, String>((ref, challengeId) {
-  final userId = AppSupabase.currentUser?.id;
+  final userId = AppSession.userId;
   if (userId == null) return Future.value(false);
   return ChallengeRepository().isParticipant(challengeId, userId);
 });

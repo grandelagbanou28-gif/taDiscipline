@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/data/models/challenge.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
-import 'package:ta_discipline/features/challenges/providers/challenge_provider.dart';
-import 'package:ta_discipline/shared/widgets/app_text_field.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/data/models/challenge.dart';
+import 'package:apex/data/local/app_session.dart';
+import 'package:apex/features/challenges/providers/challenge_provider.dart';
+import 'package:apex/shared/widgets/app_text_field.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
 import 'package:uuid/uuid.dart';
 
 class ChallengeCreateScreen extends ConsumerStatefulWidget {
@@ -59,7 +59,7 @@ class _ChallengeCreateScreenState
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
-      final userId = AppSupabase.currentUser!.id;
+      final userId = AppSession.userId!;
       final challenge = Challenge(
         id: const Uuid().v4(),
         creatorId: userId,

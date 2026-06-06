@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/data/models/challenge.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
-import 'package:ta_discipline/features/challenges/providers/challenge_provider.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/data/models/challenge.dart';
+import 'package:apex/data/local/app_session.dart';
+import 'package:apex/features/challenges/providers/challenge_provider.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
 
 class ChallengesScreen extends ConsumerStatefulWidget {
   const ChallengesScreen({super.key});
@@ -447,5 +447,5 @@ class _MyChallengeItem extends ConsumerWidget {
 }
 
 final _currentUserIdProvider = Provider<String?>((ref) {
-  return AppSupabase.currentUser?.id;
+  return AppSession.userId;
 });

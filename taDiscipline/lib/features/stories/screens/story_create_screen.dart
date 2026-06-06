@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:ta_discipline/core/constants/goal_categories.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/data/models/story.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
-import 'package:ta_discipline/features/stories/providers/story_provider.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
+import 'package:apex/core/constants/goal_categories.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/data/models/story.dart';
+import 'package:apex/data/local/app_session.dart';
+import 'package:apex/features/stories/providers/story_provider.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
 import 'package:uuid/uuid.dart';
 
 class StoryCreateScreen extends ConsumerStatefulWidget {
@@ -42,7 +42,7 @@ class _StoryCreateScreenState extends ConsumerState<StoryCreateScreen> {
 
   Future<void> _publish() async {
     if (_imageFile == null) return;
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return;
 
     setState(() => _isLoading = true);

@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/data/repositories/chat_repository.dart';
-import 'package:ta_discipline/data/repositories/goal_repository.dart';
-import 'package:ta_discipline/data/repositories/habit_repository.dart';
-import 'package:ta_discipline/data/models/journal_entry.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/data/repositories/chat_repository.dart';
+import 'package:apex/data/repositories/goal_repository.dart';
+import 'package:apex/data/repositories/habit_repository.dart';
+import 'package:apex/data/models/journal_entry.dart';
+import 'package:apex/data/local/app_session.dart';
 
 final chatHistoryProvider = FutureProvider<List<ChatMessage>>((ref) {
-  final userId = AppSupabase.currentUser?.id;
+  final userId = AppSession.userId;
   if (userId == null) return Future.value([]);
   return ChatRepository().getMessages(userId);
 });
@@ -55,7 +55,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   }
 
   Future<void> _loadHistory() async {
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return;
     try {
       final history = await ChatRepository().getMessages(userId);
@@ -86,7 +86,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _scrollToBottom();
 
     try {
-      final userId = AppSupabase.currentUser?.id;
+      final userId = AppSession.userId;
       if (userId == null) return;
 
       // Contexte utilisateur pour l'IA
@@ -271,16 +271,20 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   ),
                 ),
                 const SizedBox(width: 8),
-                Container(
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: const LinearGradient(
-                      colors: [AppColors.primary, AppColors.primaryLight],
+                SizedBox(
+                  width: 48,
+                  height: 48,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const LinearGradient(
+                        colors: [AppColors.primary, AppColors.primaryLight],
+                      ),
                     ),
-                  ),
-                  child: IconButton(
-                    icon: const Icon(Icons.send_rounded, color: Colors.white),
-                    onPressed: _isLoading ? null : _sendMessage,
+                    child: IconButton(
+                      icon: const Icon(Icons.send_rounded, color: Colors.white),
+                      onPressed: _isLoading ? null : _sendMessage,
+                    ),
                   ),
                 ),
               ],

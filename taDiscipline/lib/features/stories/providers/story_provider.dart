@@ -1,7 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ta_discipline/data/models/story.dart';
-import 'package:ta_discipline/data/repositories/story_repository.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/data/models/story.dart';
+import 'package:apex/data/repositories/story_repository.dart';
+import 'package:apex/data/local/app_session.dart';
 
 class StoryListNotifier extends StateNotifier<AsyncValue<List<Story>>> {
   StoryListNotifier() : super(const AsyncValue.loading()) {
@@ -10,7 +10,7 @@ class StoryListNotifier extends StateNotifier<AsyncValue<List<Story>>> {
 
   Future<void> _loadStories() async {
     try {
-      final userId = AppSupabase.currentUser?.id;
+      final userId = AppSession.userId;
       if (userId == null) {
         state = const AsyncValue.data([]);
         return;

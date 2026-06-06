@@ -1,8 +1,8 @@
 import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/data/models/story.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/data/models/story.dart';
 
 class StoryViewerScreen extends StatefulWidget {
   final List<Story> stories;

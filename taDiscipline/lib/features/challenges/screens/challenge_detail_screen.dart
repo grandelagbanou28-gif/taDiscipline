@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/data/models/challenge.dart';
-import 'package:ta_discipline/features/challenges/providers/challenge_provider.dart';
-import 'package:ta_discipline/features/challenges/widgets/challenge_chat.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/data/models/challenge.dart';
+import 'package:apex/features/challenges/providers/challenge_provider.dart';
+import 'package:apex/features/challenges/widgets/challenge_chat.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
 
 class ChallengeDetailScreen extends ConsumerWidget {
   final String challengeId;

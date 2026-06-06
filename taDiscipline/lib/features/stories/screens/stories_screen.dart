@@ -2,11 +2,11 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/data/models/story.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
-import 'package:ta_discipline/features/stories/providers/story_provider.dart';
-import 'package:ta_discipline/features/stories/screens/story_viewer_screen.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/data/models/story.dart';
+import 'package:apex/data/local/app_session.dart';
+import 'package:apex/features/stories/providers/story_provider.dart';
+import 'package:apex/features/stories/screens/story_viewer_screen.dart';
 
 class StoriesScreen extends ConsumerWidget {
   const StoriesScreen({super.key});
@@ -27,7 +27,7 @@ class StoriesScreen extends ConsumerWidget {
         ),
         error: (_, __) => const SizedBox.shrink(),
         data: (stories) {
-          final currentUserId = AppSupabase.currentUser?.id;
+          final currentUserId = AppSession.userId;
           final myStories =
               stories.where((s) => s.userId == currentUserId).toList();
           final friendStories =

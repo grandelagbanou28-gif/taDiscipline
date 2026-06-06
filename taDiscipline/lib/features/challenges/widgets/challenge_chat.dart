@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/data/models/challenge.dart';
-import 'package:ta_discipline/data/repositories/challenge_repository.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/data/models/challenge.dart';
+import 'package:apex/data/repositories/challenge_repository.dart';
+import 'package:apex/data/local/app_session.dart';
 import 'package:uuid/uuid.dart';
 
 class ChallengeChat extends ConsumerStatefulWidget {
@@ -65,10 +65,10 @@ class _ChallengeChatState extends ConsumerState<ChallengeChat> {
     final text = _controller.text.trim();
     if (text.isEmpty) return;
 
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return;
 
-    final userName = AppSupabase.currentUser?.email ?? 'Utilisateur';
+    final userName = AppSession.currentUser?.displayName ?? 'Utilisateur';
 
     setState(() {
       _messages.add(ChallengeMessage(
@@ -180,7 +180,7 @@ class _ChatBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isMe = message.userId == AppSupabase.currentUser?.id;
+    final isMe = message.userId == AppSession.userId;
     return Padding(
       padding: const EdgeInsets.only(bottom: 8),
       child: Row(
