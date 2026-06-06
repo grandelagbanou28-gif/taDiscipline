@@ -1,79 +1,64 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ta_discipline/data/models/journal_entry.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/data/local/local_database.dart';
+import 'package:apex/data/models/journal_entry.dart';
 
 class PomodoroRepository {
-  final SupabaseClient _client;
-
-  PomodoroRepository() : _client = AppSupabase.client;
+  final LocalDatabase _db = LocalDatabase();
 
   Future<List<PomodoroSession>> getSessions(
     String userId, {
     DateTime? from,
     DateTime? to,
   }) async {
-    var query = _client
-        .from('pomodoro_sessions')
-        .select()
-        .eq('user_id', userId);
-    if (from != null) query = query.gte('created_at', from.toIso8601String());
-    if (to != null) {
-      query = query.lte(
-        'created_at',
-        DateTime(to.year, to.month, to.day, 23, 59, 59).toIso8601String(),
-      );
+    var where = 'user_id = ?';
+    final args = <dynamic>[userId];
+    if (from != null) {
+      where += ' AND created_at >= ?';
+      args.add(from.toIso8601String());
     }
-    final response = await query.order('created_at', ascending: false);
-    return (response as List)
-        .map((json) => PomodoroSession.fromJson(json as Map<String, dynamic>))
-        .toList();
+    if (to != null) {
+      where += ' AND created_at <= ?';
+      args.add(DateTime(to.year, to.month, to.day, 23, 59, 59).toIso8601String());
+    }
+    final rows = await _db.query('pomodoro_sessions',
+        where: where, whereArgs: args, orderBy: 'created_at DESC');
+    return rows.map((j) => PomodoroSession.fromJson(j)).toList();
   }
 
   Future<PomodoroSession> createSession(PomodoroSession session) async {
-    final response = await _client
-        .from('pomodoro_sessions')
-        .insert(session.toJson())
-        .select()
-        .single();
-    return PomodoroSession.fromJson(response);
+    await _db.insert('pomodoro_sessions', session.toJson());
+    return session;
   }
 
   Future<PomodoroSession> completeSession(String sessionId) async {
-    final response = await _client
-        .from('pomodoro_sessions')
-        .update({'completed_at': DateTime.now().toIso8601String()})
-        .eq('id', sessionId)
-        .select()
-        .single();
-    return PomodoroSession.fromJson(response);
+    final now = DateTime.now().toIso8601String();
+    await _db.update('pomodoro_sessions', {'completed_at': now},
+        where: 'id = ?', whereArgs: [sessionId]);
+    final row =
+        await _db.querySingle('pomodoro_sessions', where: 'id = ?', whereArgs: [sessionId]);
+    return PomodoroSession.fromJson(row!);
   }
 
   Future<int> getTodaySessionsCount(String userId) async {
     final today = DateTime.now();
     final startOfDay = DateTime(today.year, today.month, today.day);
     final endOfDay = DateTime(today.year, today.month, today.day, 23, 59, 59);
-    final response = await _client
-        .from('pomodoro_sessions')
-        .select('id')
-        .eq('user_id', userId)
-        .gte('created_at', startOfDay.toIso8601String())
-        .lte('created_at', endOfDay.toIso8601String())
-        .not('completed_at', 'is', null);
-    return (response as List).length;
+    final rows = await _db.query('pomodoro_sessions',
+        where:
+            'user_id = ? AND created_at >= ? AND created_at <= ? AND completed_at IS NOT NULL',
+        whereArgs: [userId, startOfDay.toIso8601String(), endOfDay.toIso8601String()],
+        columns: ['id']);
+    return rows.length;
   }
 
   Future<int> getTotalMinutesToday(String userId) async {
     final today = DateTime.now();
     final startOfDay = DateTime(today.year, today.month, today.day);
     final endOfDay = DateTime(today.year, today.month, today.day, 23, 59, 59);
-    final response = await _client
-        .from('pomodoro_sessions')
-        .select('duration')
-        .eq('user_id', userId)
-        .gte('created_at', startOfDay.toIso8601String())
-        .lte('created_at', endOfDay.toIso8601String())
-        .not('completed_at', 'is', null);
-    final sessions = response as List;
-    return sessions.fold<int>(0, (sum, s) => sum + ((s['duration'] as num?)?.toInt() ?? 0));
+    final rows = await _db.query('pomodoro_sessions',
+        where:
+            'user_id = ? AND created_at >= ? AND created_at <= ? AND completed_at IS NOT NULL',
+        whereArgs: [userId, startOfDay.toIso8601String(), endOfDay.toIso8601String()],
+        columns: ['duration']);
+    return rows.fold<int>(0, (sum, r) => sum + ((r['duration'] as num?)?.toInt() ?? 0));
   }
 }

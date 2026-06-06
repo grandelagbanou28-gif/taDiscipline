@@ -1,12 +1,9 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ta_discipline/core/constants/goal_categories.dart';
-import 'package:ta_discipline/data/models/journal_entry.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/core/constants/goal_categories.dart';
+import 'package:apex/data/local/local_database.dart';
+import 'package:apex/data/models/journal_entry.dart';
 
 class JournalRepository {
-  final SupabaseClient _client;
-
-  JournalRepository() : _client = AppSupabase.client;
+  final LocalDatabase _db = LocalDatabase();
 
   Future<List<JournalEntry>> getEntries(
     String userId, {
@@ -14,44 +11,37 @@ class JournalRepository {
     DateTime? to,
     int limit = 50,
   }) async {
-    var query = _client
-        .from('journal_entries')
-        .select()
-        .eq('user_id', userId);
-    if (from != null) query = query.gte('date', from.toIso8601String());
-    if (to != null) query = query.lte('date', to.toIso8601String());
-    final response = await query
-        .order('date', ascending: false)
-        .limit(limit);
-    return (response as List)
-        .map((json) => JournalEntry.fromJson(json as Map<String, dynamic>))
-        .toList();
+    var where = 'user_id = ?';
+    final args = <dynamic>[userId];
+    if (from != null) {
+      where += ' AND date >= ?';
+      args.add(from.toIso8601String());
+    }
+    if (to != null) {
+      where += ' AND date <= ?';
+      args.add(to.toIso8601String());
+    }
+    final rows = await _db.query('journal_entries',
+        where: where, whereArgs: args, orderBy: 'date DESC', limit: limit);
+    return rows.map((j) => JournalEntry.fromJson(j)).toList();
   }
 
   Future<JournalEntry?> getEntryByDate(String userId, DateTime date) async {
     final dateStr =
         '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-    final response = await _client
-        .from('journal_entries')
-        .select()
-        .eq('user_id', userId)
-        .eq('date', dateStr)
-        .maybeSingle();
-    if (response == null) return null;
-    return JournalEntry.fromJson(response);
+    final row = await _db.querySingle('journal_entries',
+        where: 'user_id = ? AND date = ?', whereArgs: [userId, dateStr]);
+    if (row == null) return null;
+    return JournalEntry.fromJson(row);
   }
 
   Future<JournalEntry> createEntry(JournalEntry entry) async {
-    final response = await _client
-        .from('journal_entries')
-        .insert(entry.toJson())
-        .select()
-        .single();
-    return JournalEntry.fromJson(response);
+    await _db.insert('journal_entries', entry.toJson());
+    return entry;
   }
 
   Future<void> deleteEntry(String entryId) async {
-    await _client.from('journal_entries').delete().eq('id', entryId);
+    await _db.delete('journal_entries', where: 'id = ?', whereArgs: [entryId]);
   }
 
   Future<Map<DateTime, Mood>> getMoodHistory(String userId, int days) async {
