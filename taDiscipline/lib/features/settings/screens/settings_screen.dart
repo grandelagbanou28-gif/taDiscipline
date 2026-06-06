@@ -11,8 +11,6 @@ import 'package:apex/data/repositories/settings_repository.dart';
 import 'package:apex/data/models/journal_entry.dart';
 import 'package:apex/features/auth/providers/auth_provider.dart';
 import 'package:apex/features/settings/providers/locale_provider.dart';
-import 'package:apex/features/security/services/biometric_service.dart';
-import 'package:apex/data/repositories/auth_repository.dart';
 
 final userSettingsProvider = FutureProvider<UserSettings>((ref) {
   final userId = AppSession.userId;
@@ -30,7 +28,6 @@ class SettingsScreen extends ConsumerStatefulWidget {
 class _SettingsScreenState extends ConsumerState<SettingsScreen> {
   bool _notificationsEnabled = true;
   int _lockTimeout = 2;
-  bool _biometricEnabled = false;
   bool _sleepResetEnabled = false;
   String? _sleepTime;
   final _firstNameController = TextEditingController();
@@ -54,7 +51,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
         setState(() {
           _notificationsEnabled = settings.notificationsEnabled;
           _lockTimeout = settings.lockTimeoutMinutes;
-          _biometricEnabled = profile?.biometricEnabled ?? false;
           _sleepResetEnabled = settings.sleepResetEnabled;
           _sleepTime = settings.sleepTime ?? '22:00';
           _firstNameController.text = profile?.firstName ?? '';
@@ -92,25 +88,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profil mis à jour ✅'), backgroundColor: AppColors.success),
       );
-    }
-  }
-
-  Future<void> _toggleBiometric(bool value) async {
-    final userId = AppSession.userId;
-    if (userId == null) return;
-
-    if (value) {
-      final bio = BiometricService(AuthRepository());
-      final authenticated = await bio.authenticate(
-        reason: 'Activer la biométrie',
-      );
-      if (authenticated) {
-        await bio.enableBiometric(userId);
-        setState(() => _biometricEnabled = true);
-      }
-    } else {
-      await BiometricService(AuthRepository()).disableBiometric(userId);
-      setState(() => _biometricEnabled = false);
     }
   }
 
@@ -306,17 +283,6 @@ class _SettingsScreenState extends ConsumerState<SettingsScreen> {
                     icon: const Icon(Icons.chevron_right,
                         color: AppColors.textMuted),
                     onPressed: _changePin,
-                  ),
-                ),
-                const Divider(height: 1),
-                _SettingTile(
-                  icon: Icons.fingerprint,
-                  title: 'Biométrie',
-                  subtitle: 'Face ID / Touch ID',
-                  trailing: Switch(
-                    value: _biometricEnabled,
-                    onChanged: _toggleBiometric,
-                    activeColor: AppColors.primary,
                   ),
                 ),
                 const Divider(height: 1),
