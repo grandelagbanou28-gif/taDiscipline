@@ -179,7 +179,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 ),
               ),
               child: const Center(
-                child: Text('D',
+                child: Text('A',
                     style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.w700,
