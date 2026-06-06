@@ -65,21 +65,22 @@ Outils disponibles :
         {'role': 'user', 'content': message},
       ];
 
-      final grokRes = await http.post(
-        Uri.parse('https://api.x.ai/v1/chat/completions'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ${AppConstants.xaiApiKey}',
-        },
-        body: jsonEncode({
-          'model': 'grok-2-latest',
-          'messages': grokMessages,
-          'temperature': 0.7,
-          'max_tokens': 1024,
-          'tools': [
-            {
-              'type': 'function',
-              'function': {
+      final grokRes = await http
+          .post(
+            Uri.parse('https://api.x.ai/v1/chat/completions'),
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ${AppConstants.xaiApiKey}',
+            },
+            body: jsonEncode({
+              'model': 'grok-2-latest',
+              'messages': grokMessages,
+              'temperature': 0.7,
+              'max_tokens': 1024,
+              'tools': [
+                {
+                  'type': 'function',
+                  'function': {
                 'name': 'create_goal',
                 'description': "Créer un nouvel objectif SMART",
                 'parameters': {
@@ -114,7 +115,7 @@ Outils disponibles :
             },
           ],
         }),
-      );
+      ).timeout(const Duration(seconds: 15));
 
       if (!grokRes.statusCode.toString().startsWith('2')) {
         throw Exception('Grok API error: ${grokRes.statusCode}');
