@@ -191,7 +191,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
             const Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('DelAide IA',
+                Text('Apex IA',
                     style:
                         TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
                 Text('En ligne',
