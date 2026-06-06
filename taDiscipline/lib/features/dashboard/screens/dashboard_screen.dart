@@ -120,61 +120,64 @@ class _UserGreeting extends StatelessWidget {
             : 'U')
         .toUpperCase()[0];
 
-    return Row(
-      children: [
-        Container(
-          width: 44,
-          height: 44,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(14),
-            gradient: avatarUrl == null
-                ? const LinearGradient(
-                    colors: [AppColors.primary, AppColors.primaryDark],
-                  )
-                : null,
-            image: avatarUrl != null
-                ? DecorationImage(
-                    image: FileImage(File(avatarUrl)),
-                    fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () => context.push('/settings'),
+      child: Row(
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(14),
+              gradient: avatarUrl == null
+                  ? const LinearGradient(
+                      colors: [AppColors.primary, AppColors.primaryDark],
+                    )
+                  : null,
+              image: avatarUrl != null
+                  ? DecorationImage(
+                      image: FileImage(File(avatarUrl)),
+                      fit: BoxFit.cover,
+                    )
+                  : null,
+            ),
+            child: avatarUrl == null
+                ? Center(
+                    child: Text(
+                      initial,
+                      style: const TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: AppColors.textPrimary,
+                      ),
+                    ),
                   )
                 : null,
           ),
-          child: avatarUrl == null
-              ? Center(
+          const SizedBox(width: 12),
+          Expanded(
+            child: Row(
+              children: [
+                Flexible(
                   child: Text(
-                    initial,
+                    'Bienvenue, $firstName',
                     style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
                       color: AppColors.textPrimary,
                     ),
+                    overflow: TextOverflow.ellipsis,
                   ),
-                )
-              : null,
-        ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: Row(
-            children: [
-              Flexible(
-                child: Text(
-                  'Bienvenue, $firstName',
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: AppColors.textPrimary,
-                  ),
-                  overflow: TextOverflow.ellipsis,
                 ),
-              ),
-              if (isVerified) ...[
-                const SizedBox(width: 6),
-                const VerifiedBadge(),
+                if (isVerified) ...[
+                  const SizedBox(width: 6),
+                  const VerifiedBadge(),
+                ],
               ],
-            ],
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
