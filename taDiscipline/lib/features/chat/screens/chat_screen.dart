@@ -44,12 +44,12 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     _messages.add(_ChatMessage(
       role: 'assistant',
       content:
-          'Salut ! 👋 Je suis **DelAide**, ton coach IA personnel.\n\n'
-          'Je peux t\'aider à :\n'
-          '• Décomposer un objectif en plan d\'action 🎯\n'
-          '• Créer une nouvelle habitude 🔄\n'
-          '• Analyser ta progression 📊\n'
-          '• Te motiver avec des défis 🔥\n\n'
+          'Salut ! 👋 Je suis **Apex IA**, ton assistant intelligent.\n\n'
+          'Je peux répondre à toutes tes questions, t\'aider avec :\n'
+          '• Tes objectifs et habitudes 🎯\n'
+          '• De la culture, tech, programmation 💻\n'
+          '• Du brainstorming et rédaction ✍️\n'
+          '• Des conseils et analyses 📊\n\n'
           'De quoi as-tu besoin aujourd\'hui ?',
     ));
   }
