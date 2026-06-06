@@ -51,7 +51,7 @@ Outils disponibles :
     return message;
   }
 
-  Future<String> sendToDelAide({
+  Future<String> sendToApexIA({
     required String userId,
     required String message,
     required List<ChatMessage> history,
