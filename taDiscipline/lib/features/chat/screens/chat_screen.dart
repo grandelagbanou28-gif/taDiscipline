@@ -225,7 +225,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                         ),
                         SizedBox(width: 8),
                         Text(
-                          'DelAide réfléchit...',
+                          'Apex IA réfléchit...',
                           style: TextStyle(
                               color: AppColors.textMuted, fontSize: 13),
                         ),
