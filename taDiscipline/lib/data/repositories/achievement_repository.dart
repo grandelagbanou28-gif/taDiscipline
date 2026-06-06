@@ -1,39 +1,28 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ta_discipline/core/constants/goal_categories.dart';
-import 'package:ta_discipline/data/models/journal_entry.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/core/constants/goal_categories.dart';
+import 'package:apex/data/local/local_database.dart';
+import 'package:apex/data/models/journal_entry.dart';
 
 class AchievementRepository {
-  final SupabaseClient _client;
-
-  AchievementRepository() : _client = AppSupabase.client;
+  final LocalDatabase _db = LocalDatabase();
 
   Future<List<Achievement>> getAchievements(String userId) async {
-    final response = await _client
-        .from('achievements')
-        .select()
-        .eq('user_id', userId)
-        .order('unlocked_at', ascending: false);
-    return (response as List)
-        .map((json) => Achievement.fromJson(json as Map<String, dynamic>))
-        .toList();
+    final rows = await _db.query('achievements',
+        where: 'user_id = ?', whereArgs: [userId], orderBy: 'unlocked_at DESC');
+    return rows.map((j) => Achievement.fromJson(j)).toList();
   }
 
   Future<void> unlockAchievement(String userId, BadgeType badge) async {
-    await _client.from('achievements').insert({
+    await _db.insert('achievements', {
       'user_id': userId,
       'badge_id': badge.name,
+      'unlocked_at': DateTime.now().toIso8601String(),
     });
   }
 
   Future<bool> hasAchievement(String userId, BadgeType badge) async {
-    final response = await _client
-        .from('achievements')
-        .select('id')
-        .eq('user_id', userId)
-        .eq('badge_id', badge.name)
-        .maybeSingle();
-    return response != null;
+    final row = await _db.querySingle('achievements',
+        where: 'user_id = ? AND badge_id = ?', whereArgs: [userId, badge.name]);
+    return row != null;
   }
 
   Future<Set<BadgeType>> getUnlockedBadges(String userId) async {
