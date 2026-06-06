@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
-import 'package:ta_discipline/core/utils/encryption.dart';
-import 'package:ta_discipline/data/repositories/auth_repository.dart';
+import 'package:apex/core/utils/encryption.dart';
+import 'package:apex/data/repositories/auth_repository.dart';
 
 class PinService {
   final AuthRepository _authRepository;

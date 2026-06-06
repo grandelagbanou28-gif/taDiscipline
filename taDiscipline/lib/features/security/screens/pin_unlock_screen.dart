@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/features/security/services/pin_service.dart';
-import 'package:ta_discipline/features/security/services/biometric_service.dart';
-import 'package:ta_discipline/data/repositories/auth_repository.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/features/security/services/pin_service.dart';
+import 'package:apex/features/security/services/biometric_service.dart';
+import 'package:apex/data/repositories/auth_repository.dart';
 
 class PinUnlockScreen extends ConsumerStatefulWidget {
   final VoidCallback onUnlock;
@@ -109,7 +109,7 @@ class _PinUnlockScreenState extends ConsumerState<PinUnlockScreen> {
               ),
               const SizedBox(height: 16),
               const Text(
-                'taDiscipline',
+                'Apex',
                 style: TextStyle(
                   fontSize: 28,
                   fontWeight: FontWeight.w700,
@@ -146,34 +146,76 @@ class _PinUnlockScreenState extends ConsumerState<PinUnlockScreen> {
                   );
                 }),
               ),
-              const SizedBox(height: 40),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 1.2,
-                  children: [
-                    ...List.generate(9, (i) => _NumpadKey(
-                      label: '${i + 1}',
-                      onTap: () => _onDigit('${i + 1}'),
-                    )),
-                    const SizedBox.shrink(),
-                    _NumpadKey(
-                      label: '0',
-                      onTap: () => _onDigit('0'),
-                    ),
-                    _NumpadKey(
-                      label: '⌫',
-                      onTap: _onDelete,
-                    ),
-                  ],
-                ),
+              const Spacer(),
+              _Numpad(
+                onDigit: _onDigit,
+                onDelete: _onDelete,
               ),
+              const Spacer(),
             ],
           ),
         ),
       ),
+    );
+  }
+}
+
+class _Numpad extends StatelessWidget {
+  final void Function(String) onDigit;
+  final VoidCallback onDelete;
+
+  const _Numpad({required this.onDigit, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _NumpadRow(
+          children: ['1', '2', '3'],
+          onDigit: onDigit,
+        ),
+        const SizedBox(height: 12),
+        _NumpadRow(
+          children: ['4', '5', '6'],
+          onDigit: onDigit,
+        ),
+        const SizedBox(height: 12),
+        _NumpadRow(
+          children: ['7', '8', '9'],
+          onDigit: onDigit,
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(width: 76),
+            _NumpadKey(label: '0', onTap: () => onDigit('0')),
+            const SizedBox(width: 12),
+            _NumpadKey(label: '⌫', onTap: onDelete),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _NumpadRow extends StatelessWidget {
+  final List<String> children;
+  final void Function(String) onDigit;
+
+  const _NumpadRow({required this.children, required this.onDigit});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: children.map((label) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: _NumpadKey(label: label, onTap: () => onDigit(label)),
+        );
+      }).toList(),
     );
   }
 }
@@ -192,6 +234,8 @@ class _NumpadKey extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Container(
+          width: 76,
+          height: 56,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             color: AppColors.surface,

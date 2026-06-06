@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
 
 class SearchResultTile extends StatelessWidget {
   final String icon;

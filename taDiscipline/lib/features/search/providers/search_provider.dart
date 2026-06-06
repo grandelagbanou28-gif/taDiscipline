@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ta_discipline/data/models/goal.dart';
-import 'package:ta_discipline/data/models/habit.dart';
-import 'package:ta_discipline/data/models/journal_entry.dart';
-import 'package:ta_discipline/data/repositories/journal_repository.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
-import 'package:ta_discipline/features/goals/providers/goal_provider.dart';
-import 'package:ta_discipline/features/habits/providers/habit_provider.dart';
+import 'package:apex/data/models/goal.dart';
+import 'package:apex/data/models/habit.dart';
+import 'package:apex/data/models/journal_entry.dart';
+import 'package:apex/data/repositories/journal_repository.dart';
+import 'package:apex/data/local/app_session.dart';
+import 'package:apex/features/goals/providers/goal_provider.dart';
+import 'package:apex/features/habits/providers/habit_provider.dart';
 
 enum SearchFilter { all, goals, habits, journal }
 
@@ -51,7 +51,7 @@ class SearchState {
 
 final journalEntryListProvider =
     FutureProvider<List<JournalEntry>>((ref) async {
-  final userId = AppSupabase.currentUser?.id;
+  final userId = AppSession.userId;
   if (userId == null) return [];
   return JournalRepository().getEntries(userId);
 });

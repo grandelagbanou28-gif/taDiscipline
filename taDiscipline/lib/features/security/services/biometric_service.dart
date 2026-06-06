@@ -1,6 +1,6 @@
 import 'package:flutter/foundation.dart';
 import 'package:local_auth/local_auth.dart';
-import 'package:ta_discipline/data/repositories/auth_repository.dart';
+import 'package:apex/data/repositories/auth_repository.dart';
 
 class BiometricService {
   final LocalAuthentication _localAuth = LocalAuthentication();
@@ -28,7 +28,7 @@ class BiometricService {
   }
 
   Future<bool> authenticate({
-    String reason = 'Déverrouiller taDiscipline',
+    String reason = 'Déverrouiller Apex',
     bool stickyAuth = true,
   }) async {
     try {

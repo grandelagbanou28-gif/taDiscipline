@@ -1,9 +1,10 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
-import 'package:ta_discipline/shared/widgets/animated_circular_progress.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
+import 'package:apex/shared/widgets/animated_circular_progress.dart';
+import 'package:apex/shared/widgets/activity_grid.dart';
 
 class StatisticsScreen extends ConsumerWidget {
   const StatisticsScreen({super.key});
@@ -23,10 +24,25 @@ class StatisticsScreen extends ConsumerWidget {
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+         child: Column(
+           crossAxisAlignment: CrossAxisAlignment.start,
+           children: [
+             const Text(
+               'Activité',
+               style: TextStyle(
+                 fontSize: 18,
+                 fontWeight: FontWeight.w600,
+                 color: AppColors.textPrimary,
+               ),
+             ),
+             const SizedBox(height: 12),
+             GlassCard(
+               child: ActivityGrid(
+                 data: _generateSampleData(),
+               ),
+             ),
+             const SizedBox(height: 24),
+             Row(
               children: [
                 Expanded(
                   child: _StatCard(
@@ -98,6 +114,18 @@ class StatisticsScreen extends ConsumerWidget {
       ),
     );
   }
+}
+
+Map<DateTime, int> _generateSampleData() {
+  final data = <DateTime, int>{};
+  final now = DateTime.now();
+  for (int i = 0; i < 90; i++) {
+    final date = DateTime(now.year, now.month, now.day).subtract(
+      Duration(days: i),
+    );
+    data[date] = (i % 5);
+  }
+  return data;
 }
 
 class _WeeklyChart extends StatelessWidget {

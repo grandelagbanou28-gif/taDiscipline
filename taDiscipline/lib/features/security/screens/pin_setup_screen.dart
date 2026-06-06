@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/core/constants/app_constants.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
-import 'package:ta_discipline/features/security/services/pin_service.dart';
-import 'package:ta_discipline/features/security/services/biometric_service.dart';
-import 'package:ta_discipline/data/repositories/auth_repository.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/features/security/services/pin_service.dart';
+import 'package:apex/features/security/services/biometric_service.dart';
+import 'package:apex/data/repositories/auth_repository.dart';
+import 'package:apex/data/local/app_session.dart';
 
 class PinSetupScreen extends ConsumerStatefulWidget {
   const PinSetupScreen({super.key});
@@ -69,7 +67,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   }
 
   Future<void> _savePin(String pin) async {
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return;
 
     await _pinService.setPin(userId, pin);
@@ -161,30 +159,12 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
                   );
                 }),
               ),
-              const SizedBox(height: 40),
-              Expanded(
-                child: GridView.count(
-                  crossAxisCount: 3,
-                  mainAxisSpacing: 12,
-                  crossAxisSpacing: 12,
-                  childAspectRatio: 1.2,
-                  children: [
-                    ...List.generate(9, (i) => _NumpadButton(
-                      label: '${i + 1}',
-                      onTap: () => _onDigit('${i + 1}'),
-                    )),
-                    const SizedBox.shrink(),
-                    _NumpadButton(
-                      label: '0',
-                      onTap: () => _onDigit('0'),
-                    ),
-                    _NumpadButton(
-                      label: '⌫',
-                      onTap: () => _onDelete(),
-                    ),
-                  ],
-                ),
+              const Spacer(),
+              _Numpad(
+                onDigit: _onDigit,
+                onDelete: _onDelete,
               ),
+              const Spacer(),
               TextButton(
                 onPressed: _skip,
                 child: const Text(
@@ -192,6 +172,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
                   style: TextStyle(color: AppColors.textMuted),
                 ),
               ),
+              const SizedBox(height: 16),
             ],
           ),
         ),
@@ -231,11 +212,71 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   }
 }
 
-class _NumpadButton extends StatelessWidget {
+class _Numpad extends StatelessWidget {
+  final void Function(String) onDigit;
+  final VoidCallback onDelete;
+
+  const _Numpad({required this.onDigit, required this.onDelete});
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        _NumpadRow(
+          children: ['1', '2', '3'],
+          onDigit: onDigit,
+        ),
+        const SizedBox(height: 12),
+        _NumpadRow(
+          children: ['4', '5', '6'],
+          onDigit: onDigit,
+        ),
+        const SizedBox(height: 12),
+        _NumpadRow(
+          children: ['7', '8', '9'],
+          onDigit: onDigit,
+        ),
+        const SizedBox(height: 12),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const SizedBox(width: 76),
+            _NumpadKey(label: '0', onTap: () => onDigit('0')),
+            const SizedBox(width: 12),
+            _NumpadKey(label: '⌫', onTap: onDelete),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class _NumpadRow extends StatelessWidget {
+  final List<String> children;
+  final void Function(String) onDigit;
+
+  const _NumpadRow({required this.children, required this.onDigit});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: children.map((label) {
+        return Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 6),
+          child: _NumpadKey(label: label, onTap: () => onDigit(label)),
+        );
+      }).toList(),
+    );
+  }
+}
+
+class _NumpadKey extends StatelessWidget {
   final String label;
   final VoidCallback onTap;
 
-  const _NumpadButton({required this.label, required this.onTap});
+  const _NumpadKey({required this.label, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -245,6 +286,8 @@ class _NumpadButton extends StatelessWidget {
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
         child: Container(
+          width: 76,
+          height: 56,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             color: AppColors.surface,

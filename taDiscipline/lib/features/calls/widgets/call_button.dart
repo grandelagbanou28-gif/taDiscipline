@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
+import 'package:apex/core/theme/app_colors.dart';
 
 class CallButton extends StatelessWidget {
   final String roomName;

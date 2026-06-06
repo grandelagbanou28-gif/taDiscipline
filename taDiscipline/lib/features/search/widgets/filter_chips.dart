@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/features/search/providers/search_provider.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/features/search/providers/search_provider.dart';
 
 class FilterChipsRow extends StatelessWidget {
   final SearchFilter currentFilter;

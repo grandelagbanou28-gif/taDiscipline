@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/core/constants/goal_categories.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
-import 'package:ta_discipline/data/models/goal.dart';
-import 'package:ta_discipline/data/models/habit.dart';
-import 'package:ta_discipline/data/models/journal_entry.dart';
-import 'package:ta_discipline/features/search/providers/search_provider.dart';
-import 'package:ta_discipline/features/search/widgets/search_result_tile.dart';
-import 'package:ta_discipline/features/search/widgets/filter_chips.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/core/constants/goal_categories.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
+import 'package:apex/data/models/goal.dart';
+import 'package:apex/data/models/habit.dart';
+import 'package:apex/data/models/journal_entry.dart';
+import 'package:apex/features/search/providers/search_provider.dart';
+import 'package:apex/features/search/widgets/search_result_tile.dart';
+import 'package:apex/features/search/widgets/filter_chips.dart';
 
 class SearchScreen extends ConsumerStatefulWidget {
   const SearchScreen({super.key});
