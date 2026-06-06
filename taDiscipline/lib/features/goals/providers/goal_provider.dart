@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:ta_discipline/data/repositories/goal_repository.dart';
-import 'package:ta_discipline/data/models/goal.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/data/repositories/goal_repository.dart';
+import 'package:apex/data/models/goal.dart';
+import 'package:apex/data/local/app_session.dart';
 import 'package:uuid/uuid.dart';
 
 part 'goal_provider.g.dart';
@@ -10,7 +10,7 @@ part 'goal_provider.g.dart';
 class GoalList extends _$GoalList {
   @override
   Future<List<Goal>> build() async {
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return [];
     return GoalRepository().getGoals(userId);
   }

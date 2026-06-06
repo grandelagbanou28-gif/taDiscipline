@@ -1,11 +1,11 @@
 import 'package:flutter/foundation.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:ta_discipline/data/repositories/goal_repository.dart';
-import 'package:ta_discipline/data/repositories/habit_repository.dart';
-import 'package:ta_discipline/data/repositories/pomodoro_repository.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
-import 'package:ta_discipline/data/models/goal.dart';
-import 'package:ta_discipline/features/auth/providers/auth_provider.dart';
+import 'package:apex/data/repositories/goal_repository.dart';
+import 'package:apex/data/repositories/habit_repository.dart';
+import 'package:apex/data/repositories/pomodoro_repository.dart';
+import 'package:apex/data/local/app_session.dart';
+import 'package:apex/data/models/goal.dart';
+import 'package:apex/features/auth/providers/auth_provider.dart';
 
 part 'dashboard_provider.g.dart';
 
@@ -31,12 +31,12 @@ class DashboardData {
 class Dashboard extends _$Dashboard {
   @override
   Future<DashboardData> build() async {
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) {
       return const DashboardData(
         disciplineScore: 0,
         streak: 0,
-        quote: 'Bienvenue sur taDiscipline !',
+        quote: 'Bienvenue sur Apex !',
         recentGoals: [],
         todayHabits: [],
       );

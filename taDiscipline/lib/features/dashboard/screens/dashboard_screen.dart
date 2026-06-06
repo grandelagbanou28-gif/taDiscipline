@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
-import 'package:ta_discipline/shared/widgets/animated_circular_progress.dart';
-import 'package:ta_discipline/shared/widgets/streak_flame.dart';
-import 'package:ta_discipline/shared/widgets/particle_background.dart';
-import 'package:ta_discipline/shared/widgets/verified_badge.dart';
-import 'package:ta_discipline/features/dashboard/providers/dashboard_provider.dart';
-import 'package:ta_discipline/features/auth/providers/auth_provider.dart';
-import 'package:ta_discipline/features/settings/providers/verified_provider.dart';
-import 'package:ta_discipline/data/models/user_profile.dart';
-import 'package:ta_discipline/features/stories/screens/stories_screen.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
+import 'package:apex/shared/widgets/animated_circular_progress.dart';
+import 'package:apex/shared/widgets/streak_flame.dart';
+import 'package:apex/shared/widgets/verified_badge.dart';
+import 'package:apex/shared/widgets/swipe_check_tile.dart';
+import 'package:apex/features/dashboard/providers/dashboard_provider.dart';
+import 'package:apex/features/auth/providers/auth_provider.dart';
+import 'package:apex/features/settings/providers/verified_provider.dart';
+import 'package:apex/data/models/user_profile.dart';
+import 'package:apex/features/stories/screens/stories_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -24,7 +24,7 @@ class DashboardScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('taDiscipline'),
+        title: const Text('Apex'),
         actions: [
           IconButton(
             icon: const Icon(Icons.search),
@@ -383,40 +383,26 @@ class _HabitsRow extends StatelessWidget {
       );
     }
     return Column(
-      children: habits.map((h) => Padding(
-        padding: const EdgeInsets.only(bottom: 8),
-        child: GlassCard(
-          child: Row(
-            children: [
-              Container(
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(12),
-                  color: AppColors.success.withValues(alpha: 0.15),
-                ),
-                child: const Icon(Icons.check, color: AppColors.success),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Text(
-                  h['name'] as String? ?? '',
-                  style: const TextStyle(
-                    fontSize: 14,
-                    color: AppColors.textPrimary,
-                  ),
-                ),
-              ),
-              Text(
-                h['status'] as String? ?? '',
-                style: const TextStyle(
-                  fontSize: 12,
-                  color: AppColors.textMuted,
-                ),
-              ),
-            ],
-          ),
-        ),
+      children: habits.map((h) => SwipeCheckTile(
+        title: h['name'] as String? ?? '',
+        icon: Icons.repeat,
+        color: AppColors.success,
+        onComplete: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Habitude complétée !'),
+              backgroundColor: AppColors.success,
+            ),
+          );
+        },
+        onSnooze: () {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Habitude reportée'),
+              backgroundColor: AppColors.warning,
+            ),
+          );
+        },
       )).toList(),
     );
   }

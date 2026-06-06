@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/core/constants/goal_categories.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
-import 'package:ta_discipline/shared/widgets/app_text_field.dart';
-import 'package:ta_discipline/features/goals/providers/goal_provider.dart';
-import 'package:ta_discipline/data/models/goal.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/core/constants/goal_categories.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
+import 'package:apex/shared/widgets/app_text_field.dart';
+import 'package:apex/features/goals/providers/goal_provider.dart';
+import 'package:apex/data/models/goal.dart';
+import 'package:apex/data/local/app_session.dart';
 import 'package:uuid/uuid.dart';
 
 class GoalCreateScreen extends ConsumerStatefulWidget {
@@ -36,7 +36,7 @@ class _GoalCreateScreenState extends ConsumerState<GoalCreateScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
-      final userId = AppSupabase.currentUser!.id;
+      final userId = AppSession.userId!;
       final goal = Goal(
         id: const Uuid().v4(),
         userId: userId,
