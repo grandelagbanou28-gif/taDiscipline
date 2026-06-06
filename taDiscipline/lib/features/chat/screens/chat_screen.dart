@@ -254,7 +254,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                   child: TextField(
                     controller: _messageController,
                     decoration: InputDecoration(
-                      hintText: 'Parle à DelAide...',
+                      hintText: 'Parle à Apex IA...',
                       hintStyle: const TextStyle(color: AppColors.textMuted),
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(24),
