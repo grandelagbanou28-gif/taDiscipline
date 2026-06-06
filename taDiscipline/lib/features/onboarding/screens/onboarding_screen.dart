@@ -43,8 +43,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       icon: Icons.auto_awesome_rounded,
       title: 'Apex IA',
       description:
-          'Un assistant personnel propulsé par Grok (xAI)\n'
-          'pour te motiver et t\'aider au quotidien.',
+          'Un assistant propulsé par Grok (xAI)\n'
+          'qui répond à toutes tes questions au quotidien.',
       color: AppColors.cyan,
     ),
     _OnboardingStep(
