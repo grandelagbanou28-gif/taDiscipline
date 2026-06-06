@@ -1,44 +1,27 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ta_discipline/data/models/habit.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/data/local/local_database.dart';
+import 'package:apex/data/models/habit.dart';
 
 class HabitRepository {
-  final SupabaseClient _client;
-
-  HabitRepository() : _client = AppSupabase.client;
+  final LocalDatabase _db = LocalDatabase();
 
   Future<List<Habit>> getHabits(String userId) async {
-    final response = await _client
-        .from('habits')
-        .select()
-        .eq('user_id', userId)
-        .order('created_at', ascending: false);
-    return (response as List)
-        .map((json) => Habit.fromJson(json as Map<String, dynamic>))
-        .toList();
+    final rows = await _db.query('habits',
+        where: 'user_id = ?', whereArgs: [userId], orderBy: 'created_at DESC');
+    return rows.map((j) => Habit.fromJson(j)).toList();
   }
 
   Future<Habit> createHabit(Habit habit) async {
-    final response = await _client
-        .from('habits')
-        .insert(habit.toJson())
-        .select()
-        .single();
-    return Habit.fromJson(response);
+    await _db.insert('habits', habit.toJson());
+    return habit;
   }
 
   Future<Habit> updateHabit(Habit habit) async {
-    final response = await _client
-        .from('habits')
-        .update(habit.toJson())
-        .eq('id', habit.id)
-        .select()
-        .single();
-    return Habit.fromJson(response);
+    await _db.update('habits', habit.toJson(), where: 'id = ?', whereArgs: [habit.id]);
+    return habit;
   }
 
   Future<void> deleteHabit(String habitId) async {
-    await _client.from('habits').delete().eq('id', habitId);
+    await _db.delete('habits', where: 'id = ?', whereArgs: [habitId]);
   }
 
   Future<List<HabitLog>> getHabitLogs(
@@ -46,25 +29,24 @@ class HabitRepository {
     DateTime? from,
     DateTime? to,
   }) async {
-    var query = _client
-        .from('habit_logs')
-        .select()
-        .eq('habit_id', habitId);
-    if (from != null) query = query.gte('date', from.toIso8601String());
-    if (to != null) query = query.lte('date', to.toIso8601String());
-    final response = await query.order('date', ascending: false);
-    return (response as List)
-        .map((json) => HabitLog.fromJson(json as Map<String, dynamic>))
-        .toList();
+    var where = 'habit_id = ?';
+    final args = [habitId];
+    if (from != null) {
+      where += ' AND date >= ?';
+      args.add(from.toIso8601String());
+    }
+    if (to != null) {
+      where += ' AND date <= ?';
+      args.add(to.toIso8601String());
+    }
+    final rows =
+        await _db.query('habit_logs', where: where, whereArgs: args, orderBy: 'date DESC');
+    return rows.map((j) => HabitLog.fromJson(j)).toList();
   }
 
   Future<HabitLog> logHabit(HabitLog log) async {
-    final response = await _client
-        .from('habit_logs')
-        .upsert(log.toJson(), onConflict: 'habit_id,date')
-        .select()
-        .single();
-    return HabitLog.fromJson(response);
+    await _db.insert('habit_logs', log.toJson());
+    return log;
   }
 
   Future<int> getCurrentStreak(String habitId) async {

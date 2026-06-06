@@ -1,59 +1,59 @@
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:ta_discipline/data/models/plan.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'dart:convert';
+import 'package:apex/data/local/local_database.dart';
+import 'package:apex/data/models/plan.dart';
 
 class PlanRepository {
-  final SupabaseClient _client;
-
-  PlanRepository() : _client = AppSupabase.client;
+  final LocalDatabase _db = LocalDatabase();
 
   Future<List<Plan>> getPlans(
     String userId, {
     DateTime? from,
     DateTime? to,
   }) async {
-    var query = _client
-        .from('plans')
-        .select()
-        .eq('user_id', userId);
-    if (from != null) query = query.gte('date', from.toIso8601String());
-    if (to != null) query = query.lte('date', to.toIso8601String());
-    final response = await query.order('date', ascending: false);
-    return (response as List)
-        .map((json) => Plan.fromJson(json as Map<String, dynamic>))
-        .toList();
+    var where = 'user_id = ?';
+    final args = <dynamic>[userId];
+    if (from != null) {
+      where += ' AND date >= ?';
+      args.add(from.toIso8601String().split('T')[0]);
+    }
+    if (to != null) {
+      where += ' AND date <= ?';
+      args.add(to.toIso8601String().split('T')[0]);
+    }
+    final rows =
+        await _db.query('plans', where: where, whereArgs: args, orderBy: 'date DESC');
+    return rows.map((j) => _rowToPlan(j)).toList();
   }
 
   Future<Plan> getPlanByDate(String userId, DateTime date) async {
     final dateStr =
         '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-    final response = await _client
-        .from('plans')
-        .select()
-        .eq('user_id', userId)
-        .eq('date', dateStr)
-        .maybeSingle();
-    if (response == null) {
-      return Plan(
-        id: '',
-        userId: userId,
-        date: date,
-        createdAt: DateTime.now(),
-      );
+    final row = await _db.querySingle('plans',
+        where: 'user_id = ? AND date = ?', whereArgs: [userId, dateStr]);
+    if (row == null) {
+      return Plan(id: '', userId: userId, date: date, createdAt: DateTime.now());
     }
-    return Plan.fromJson(response);
+    return _rowToPlan(row);
   }
 
   Future<Plan> savePlan(Plan plan) async {
-    final response = await _client
-        .from('plans')
-        .upsert(plan.toJson(), onConflict: 'user_id,date')
-        .select()
-        .single();
-    return Plan.fromJson(response);
+    await _db.insert('plans', _planToRow(plan));
+    return plan;
   }
 
   Future<void> deletePlan(String planId) async {
-    await _client.from('plans').delete().eq('id', planId);
+    await _db.delete('plans', where: 'id = ?', whereArgs: [planId]);
+  }
+
+  Plan _rowToPlan(Map<String, dynamic> row) {
+    final tasks = row['tasks'];
+    if (tasks is String) row['tasks'] = jsonDecode(tasks);
+    return Plan.fromJson(row);
+  }
+
+  Map<String, dynamic> _planToRow(Plan plan) {
+    final json = plan.toJson();
+    json['tasks'] = jsonEncode(json['tasks']);
+    return json;
   }
 }
