@@ -122,7 +122,10 @@ class _ApexAppState extends ConsumerState<ApexApp>
           if (_panicMode) {
             return _PanicOverlay(child: child!);
           }
-          return child!;
+          return Builder(
+            key: ValueKey(locale.languageCode),
+            builder: (_) => child!,
+          );
         },
       ),
     );
