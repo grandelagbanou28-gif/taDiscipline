@@ -1,7 +1,7 @@
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:ta_discipline/data/repositories/habit_repository.dart';
-import 'package:ta_discipline/data/models/habit.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/data/repositories/habit_repository.dart';
+import 'package:apex/data/models/habit.dart';
+import 'package:apex/data/local/app_session.dart';
 
 part 'habit_provider.g.dart';
 
@@ -9,7 +9,7 @@ part 'habit_provider.g.dart';
 class HabitList extends _$HabitList {
   @override
   Future<List<Habit>> build() async {
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return [];
     return HabitRepository().getHabits(userId);
   }

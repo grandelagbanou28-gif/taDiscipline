@@ -1,22 +1,24 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/core/constants/app_constants.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
-import 'package:ta_discipline/data/repositories/pomodoro_repository.dart';
-import 'package:ta_discipline/data/models/journal_entry.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/core/constants/app_constants.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
+import 'package:apex/data/repositories/pomodoro_repository.dart';
+import 'package:apex/data/repositories/plan_repository.dart';
+import 'package:apex/data/models/journal_entry.dart';
+import 'package:apex/data/models/plan.dart';
+import 'package:apex/data/local/app_session.dart';
 import 'package:uuid/uuid.dart';
 
 final todaySessionsProvider = FutureProvider<int>((ref) {
-  final userId = AppSupabase.currentUser?.id;
+  final userId = AppSession.userId;
   if (userId == null) return Future.value(0);
   return PomodoroRepository().getTodaySessionsCount(userId);
 });
 
 final todayMinutesProvider = FutureProvider<int>((ref) {
-  final userId = AppSupabase.currentUser?.id;
+  final userId = AppSession.userId;
   if (userId == null) return Future.value(0);
   return PomodoroRepository().getTotalMinutesToday(userId);
 });
@@ -37,17 +39,39 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
   bool _isBreak = false;
   String _selectedSound = 'Nature';
   String? _currentSessionId;
+  List<PlanTask> _todayTasks = [];
+  String? _selectedTaskId;
+  final _focusController = TextEditingController();
+  bool _showQuickFocus = false;
 
   final _sounds = ['Silence', 'Pluie', 'Nature', 'Lo-fi', 'Café'];
 
   @override
+  void initState() {
+    super.initState();
+    _loadTodayTasks();
+  }
+
+  Future<void> _loadTodayTasks() async {
+    final userId = AppSession.userId;
+    if (userId == null) return;
+    try {
+      final plan = await PlanRepository().getPlanByDate(userId, DateTime.now());
+      if (mounted) {
+        setState(() => _todayTasks = plan.tasks);
+      }
+    } catch (_) {}
+  }
+
+  @override
   void dispose() {
     _timer?.cancel();
+    _focusController.dispose();
     super.dispose();
   }
 
   Future<void> _startTimer() async {
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return;
 
     if (_currentSessionId == null) {
@@ -56,6 +80,7 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
           id: const Uuid().v4(),
           userId: userId,
           durationMinutes: AppConstants.pomodoroDefaultMinutes,
+          taskId: _selectedTaskId,
           createdAt: DateTime.now(),
         ),
       );
@@ -130,6 +155,12 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
     _startTimer();
   }
 
+  String _getTaskName(String? taskId) {
+    if (taskId == null) return '';
+    final task = _todayTasks.where((t) => t.id == taskId).firstOrNull;
+    return task?.title ?? taskId;
+  }
+
   String _formatTime(int seconds) {
     final m = (seconds ~/ 60).toString().padLeft(2, '0');
     final s = (seconds % 60).toString().padLeft(2, '0');
@@ -154,6 +185,109 @@ class _PomodoroScreenState extends ConsumerState<PomodoroScreen>
       appBar: AppBar(title: const Text('Focus')),
       body: Column(
         children: [
+          // Focus Stack: tache selectionnee
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: GlassCard(
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              child: _showQuickFocus
+                  ? Row(
+                      children: [
+                        Expanded(
+                          child: TextField(
+                            controller: _focusController,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 13,
+                            ),
+                            decoration: const InputDecoration(
+                              hintText: 'Que veux-tu accomplir ?',
+                              hintStyle: TextStyle(
+                                color: AppColors.textMuted,
+                                fontSize: 13,
+                              ),
+                              border: InputBorder.none,
+                              isDense: true,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.check,
+                              color: AppColors.success, size: 18),
+                          onPressed: () {
+                            if (_focusController.text.trim().isNotEmpty) {
+                              setState(() {
+                                _selectedTaskId = _focusController.text.trim();
+                                _showQuickFocus = false;
+                              });
+                            }
+                          },
+                        ),
+                      ],
+                    )
+                  : Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonHideUnderline(
+                            child: DropdownButton<String?>(
+                              value: _selectedTaskId,
+                              isExpanded: true,
+                              hint: Text(
+                                _selectedTaskId != null
+                                    ? 'Focus sur: ${_getTaskName(_selectedTaskId)}'
+                                    : 'Sélectionne une tâche',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  color: _selectedTaskId != null
+                                      ? AppColors.primaryLight
+                                      : AppColors.textMuted,
+                                ),
+                              ),
+                              dropdownColor: AppColors.surface,
+                              style: const TextStyle(
+                                color: AppColors.textPrimary,
+                                fontSize: 13,
+                              ),
+                              items: [
+                                const DropdownMenuItem(
+                                  value: null,
+                                  child: Text('Aucune tâche'),
+                                ),
+                                ..._todayTasks.map((t) => DropdownMenuItem(
+                                      value: t.id,
+                                      child: Text(
+                                        t.title,
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    )),
+                                const DropdownMenuItem(
+                                  value: '__quick__',
+                                  child: Text('⚡ Focus rapide...'),
+                                ),
+                              ],
+                              onChanged: (v) {
+                                if (v == '__quick__') {
+                                  setState(() => _showQuickFocus = true);
+                                } else {
+                                  setState(() => _selectedTaskId = v);
+                                }
+                              },
+                            ),
+                          ),
+                        ),
+                        if (_selectedTaskId != null)
+                          IconButton(
+                            icon: const Icon(Icons.close,
+                                color: AppColors.textMuted, size: 16),
+                            onPressed: () {
+                              setState(() => _selectedTaskId = null);
+                            },
+                          ),
+                      ],
+                    ),
+            ),
+          ),
+          const SizedBox(height: 12),
           // Stats du jour
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),

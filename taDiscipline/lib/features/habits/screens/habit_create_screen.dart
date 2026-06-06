@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/core/constants/goal_categories.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
-import 'package:ta_discipline/shared/widgets/app_text_field.dart';
-import 'package:ta_discipline/features/habits/providers/habit_provider.dart';
-import 'package:ta_discipline/data/models/habit.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/core/constants/goal_categories.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
+import 'package:apex/shared/widgets/app_text_field.dart';
+import 'package:apex/features/habits/providers/habit_provider.dart';
+import 'package:apex/data/models/habit.dart';
+import 'package:apex/data/local/app_session.dart';
 import 'package:uuid/uuid.dart';
 
 class HabitCreateScreen extends ConsumerStatefulWidget {
@@ -25,12 +25,19 @@ class _HabitCreateScreenState extends ConsumerState<HabitCreateScreen> {
   bool _isPositive = true;
   String _selectedColor = '#7C3AED';
   String _selectedIcon = '⭐';
+  int _cycleInterval = 2;
+  String _cycleUnit = 'day';
   bool _isLoading = false;
 
   final _icons = ['⭐', '💪', '📚', '🧘', '🏃', '🎯', '🎨', '🧠', '💧', '🥗'];
   final _colors = [
     '#7C3AED', '#F59E0B', '#10B981', '#06B6D4',
     '#D946EF', '#3B82F6', '#EF4444', '#84CC16',
+  ];
+  final _cycleUnits = [
+    ('day', 'jours'),
+    ('week', 'semaines'),
+    ('month', 'mois'),
   ];
 
   @override
@@ -43,7 +50,7 @@ class _HabitCreateScreenState extends ConsumerState<HabitCreateScreen> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
-      final userId = AppSupabase.currentUser!.id;
+      final userId = AppSession.userId!;
       final habit = Habit(
         id: const Uuid().v4(),
         userId: userId,
@@ -53,6 +60,8 @@ class _HabitCreateScreenState extends ConsumerState<HabitCreateScreen> {
         color: _selectedColor,
         icon: _selectedIcon,
         isPositive: _isPositive,
+        cycleInterval: _frequency == HabitFrequency.custom ? _cycleInterval : 1,
+        cycleUnit: _frequency == HabitFrequency.custom ? _cycleUnit : 'day',
         createdAt: DateTime.now(),
       );
       await ref.read(habitListProvider.notifier).createHabit(habit);
@@ -204,6 +213,92 @@ class _HabitCreateScreenState extends ConsumerState<HabitCreateScreen> {
                   );
                 }).toList(),
               ),
+              if (_frequency == HabitFrequency.custom) ...[
+                const SizedBox(height: 20),
+                const Text(
+                  'Cycle personnalisé',
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w500,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Row(
+                  children: [
+                    SizedBox(
+                      width: 80,
+                      child: TextFormField(
+                        initialValue: _cycleInterval.toString(),
+                        keyboardType: TextInputType.number,
+                        style: const TextStyle(
+                          color: AppColors.textPrimary,
+                          fontSize: 14,
+                        ),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 12,
+                            vertical: 10,
+                          ),
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(10),
+                            borderSide: BorderSide(
+                              color: AppColors.glassBorder,
+                            ),
+                          ),
+                        ),
+                        onChanged: (v) {
+                          final parsed = int.tryParse(v);
+                          if (parsed != null && parsed > 0) {
+                            setState(() => _cycleInterval = parsed);
+                          }
+                        },
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: AppColors.glassBorder),
+                        ),
+                        child: DropdownButtonHideUnderline(
+                          child: DropdownButton<String>(
+                            value: _cycleUnit,
+                            isExpanded: true,
+                            dropdownColor: AppColors.surface,
+                            style: const TextStyle(
+                              color: AppColors.textPrimary,
+                              fontSize: 14,
+                            ),
+                            items: _cycleUnits.map((u) {
+                              return DropdownMenuItem(
+                                value: u.$1,
+                                child: Text(
+                                  'Tous les $_cycleInterval ${u.$2}',
+                                  style: const TextStyle(
+                                    color: AppColors.textPrimary,
+                                  ),
+                                ),
+                              );
+                            }).toList(),
+                            onChanged: (v) {
+                              if (v != null) {
+                                setState(() => _cycleUnit = v);
+                              }
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
               const SizedBox(height: 20),
               const Text(
                 'Icône',

@@ -1,26 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/core/constants/goal_categories.dart';
-import 'package:ta_discipline/core/utils/date_utils.dart';
-import 'package:ta_discipline/core/utils/encryption.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
-import 'package:ta_discipline/data/repositories/journal_repository.dart';
-import 'package:ta_discipline/data/models/journal_entry.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/core/constants/goal_categories.dart';
+import 'package:apex/core/utils/date_utils.dart';
+import 'package:apex/core/utils/encryption.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
+import 'package:apex/data/repositories/journal_repository.dart';
+import 'package:apex/data/models/journal_entry.dart';
+import 'package:apex/data/local/app_session.dart';
 import 'package:uuid/uuid.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 final journalProvider =
     FutureProvider.family<JournalEntry?, DateTime>((ref, date) {
-  final userId = AppSupabase.currentUser?.id;
+  final userId = AppSession.userId;
   if (userId == null) return Future.value(null);
   return JournalRepository().getEntryByDate(userId, date);
 });
 
 final moodHistoryProvider =
     FutureProvider.family<Map<DateTime, Mood>, int>((ref, days) {
-  final userId = AppSupabase.currentUser?.id;
+  final userId = AppSession.userId;
   if (userId == null) return Future.value({});
   return JournalRepository().getMoodHistory(userId, days);
 });
@@ -40,7 +39,7 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
   bool _isLoading = false;
   bool _editing = false;
 
-  static const _encryptionKey = 'taDiscipline-journal-key-2026';
+  static const _encryptionKey = 'Apex-journal-key-2026';
 
   @override
   void initState() {
@@ -56,7 +55,7 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
   }
 
   Future<void> _loadTodayEntry() async {
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return;
 
     final repo = JournalRepository();
@@ -81,7 +80,7 @@ class _JournalScreenState extends ConsumerState<JournalScreen> {
   }
 
   Future<void> _saveEntry() async {
-    final userId = AppSupabase.currentUser?.id;
+    final userId = AppSession.userId;
     if (userId == null) return;
 
     setState(() => _isLoading = true);

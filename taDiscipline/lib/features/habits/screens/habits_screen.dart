@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/core/constants/goal_categories.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
-import 'package:ta_discipline/shared/widgets/habit_grid.dart';
-import 'package:ta_discipline/features/habits/providers/habit_provider.dart';
-import 'package:ta_discipline/data/models/habit.dart';
-import 'package:ta_discipline/core/utils/date_utils.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/core/constants/goal_categories.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
+import 'package:apex/shared/widgets/habit_grid.dart';
+import 'package:apex/features/habits/providers/habit_provider.dart';
+import 'package:apex/data/models/habit.dart';
+import 'package:apex/core/utils/date_utils.dart';
 
 class HabitsScreen extends ConsumerWidget {
   const HabitsScreen({super.key});

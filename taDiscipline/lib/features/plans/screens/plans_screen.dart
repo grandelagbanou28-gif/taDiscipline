@@ -1,15 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:ta_discipline/core/theme/app_colors.dart';
-import 'package:ta_discipline/core/utils/date_utils.dart';
-import 'package:ta_discipline/shared/widgets/glass_card.dart';
-import 'package:ta_discipline/data/repositories/plan_repository.dart';
-import 'package:ta_discipline/data/models/plan.dart';
-import 'package:ta_discipline/data/supabase/supabase_client.dart';
+import 'package:apex/core/theme/app_colors.dart';
+import 'package:apex/core/utils/date_utils.dart';
+import 'package:apex/shared/widgets/glass_card.dart';
+import 'package:apex/data/repositories/plan_repository.dart';
+import 'package:apex/data/models/plan.dart';
+import 'package:apex/data/local/app_session.dart';
 import 'package:uuid/uuid.dart';
 
 final plansProvider = FutureProvider.family<List<Plan>, DateTime>((ref, date) {
-  final userId = AppSupabase.currentUser?.id;
+  final userId = AppSession.userId;
   if (userId == null) return Future.value([]);
   final weekStart = DateFormats.startOfWeek(date);
   final weekEnd = DateFormats.endOfWeek(date);
@@ -47,7 +47,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
 
   Future<void> _addTask(DateTime day) async {
     final planRepo = PlanRepository();
-    final userId = AppSupabase.currentUser!.id;
+    final userId = AppSession.userId!;
 
     showDialog(
       context: context,
@@ -220,7 +220,7 @@ class _PlansScreenState extends ConsumerState<PlansScreen> {
                   onToggle: () async {
                     final day = task.startTime ?? _currentWeekStart;
                     final existing = await PlanRepository().getPlanByDate(
-                      AppSupabase.currentUser!.id,
+                      AppSession.userId!,
                       day,
                     );
                     final updated = existing.copyWith(
