@@ -188,7 +188,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
     if (_showConfirm) {
       if (_confirmController.text.length < 6) {
         _confirmController.text += digit;
-        _onPinEntered(_confirmController.text);
+        setState(() {});
       }
     } else {
       if (_pinController.text.length < 6) {
