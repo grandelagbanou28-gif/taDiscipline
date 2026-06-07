@@ -7,6 +7,8 @@ import 'package:apex/features/security/services/biometric_service.dart';
 import 'package:apex/data/repositories/auth_repository.dart';
 import 'package:apex/data/local/app_session.dart';
 
+enum _PinStep { oldPin, newPin, confirmPin }
+
 class PinSetupScreen extends ConsumerStatefulWidget {
   const PinSetupScreen({super.key});
 
@@ -16,8 +18,8 @@ class PinSetupScreen extends ConsumerStatefulWidget {
 
 class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   final _pinController = TextEditingController();
-  final _confirmController = TextEditingController();
-  bool _showConfirm = false;
+  String? _newPin;
+  _PinStep _step = _PinStep.newPin;
   bool _useBiometric = false;
   late PinService _pinService;
   late BiometricService _biometricService;
@@ -27,7 +29,19 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
     super.initState();
     _pinService = PinService(AuthRepository());
     _biometricService = BiometricService(AuthRepository());
-    _checkBiometricAvailability();
+    _init();
+  }
+
+  Future<void> _init() async {
+    final userId = AppSession.userId;
+    if (userId == null) return;
+    await _pinService.initialize(userId);
+    await _checkBiometricAvailability();
+    if (mounted) {
+      setState(() {
+        _step = _pinService.hasPin ? _PinStep.oldPin : _PinStep.newPin;
+      });
+    }
   }
 
   Future<void> _checkBiometricAvailability() async {
@@ -38,30 +52,74 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   @override
   void dispose() {
     _pinController.dispose();
-    _confirmController.dispose();
     super.dispose();
   }
 
-  void _onPinEntered(String pin) {
-    if (!_showConfirm) {
-      _pinController.text = pin;
-      setState(() => _showConfirm = true);
-    } else {
-      if (pin == _pinController.text) {
-        _savePin(pin);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Les codes PIN ne correspondent pas'),
-            backgroundColor: AppColors.error,
-          ),
-        );
-        setState(() {
-          _showConfirm = false;
+  String get _title {
+    switch (_step) {
+      case _PinStep.oldPin:
+        return 'Entre ton code PIN actuel';
+      case _PinStep.newPin:
+        return 'Nouveau code PIN';
+      case _PinStep.confirmPin:
+        return 'Confirme le nouveau code PIN';
+    }
+  }
+
+  String get _subtitle {
+    switch (_step) {
+      case _PinStep.oldPin:
+        return '6 chiffres requis';
+      case _PinStep.newPin:
+        return '6 chiffres pour déverrouiller l\'app';
+      case _PinStep.confirmPin:
+        return 'Ressaisis le code à 6 chiffres';
+    }
+  }
+
+  Future<void> _onConfirm() async {
+    final pin = _pinController.text;
+    if (pin.length != 6) return;
+
+    switch (_step) {
+      case _PinStep.oldPin:
+        final valid = await _pinService.verifyPin(pin);
+        if (valid) {
           _pinController.clear();
-          _confirmController.clear();
-        });
-      }
+          setState(() => _step = _PinStep.newPin);
+        } else {
+          _pinController.clear();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Code PIN incorrect'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+          }
+        }
+        break;
+      case _PinStep.newPin:
+        _newPin = pin;
+        _pinController.clear();
+        setState(() => _step = _PinStep.confirmPin);
+        break;
+      case _PinStep.confirmPin:
+        if (pin == _newPin) {
+          await _savePin(pin);
+        } else {
+          _pinController.clear();
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Les codes PIN ne correspondent pas'),
+                backgroundColor: AppColors.error,
+              ),
+            );
+            setState(() => _step = _PinStep.newPin);
+          }
+        }
+        break;
     }
   }
 
@@ -83,21 +141,21 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Sécurité configurée ✅'),
+          content: Text('Code PIN enregistré ✅'),
           backgroundColor: AppColors.success,
         ),
       );
-      context.go('/dashboard');
+      context.pop();
     }
   }
 
   void _skip() {
-    context.go('/dashboard');
+    context.pop();
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentPin = _showConfirm ? _confirmController.text : _pinController.text;
+    final currentPin = _pinController.text;
     final screenHeight = MediaQuery.of(context).size.height;
     final compact = screenHeight < 700;
 
@@ -123,7 +181,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
               ),
               SizedBox(height: compact ? 12 : 16),
               Text(
-                _showConfirm ? 'Confirme ton code PIN' : 'Crée un code PIN',
+                _title,
                 style: TextStyle(
                   fontSize: compact ? 20 : 22,
                   fontWeight: FontWeight.w700,
@@ -133,7 +191,7 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
               ),
               SizedBox(height: compact ? 6 : 8),
               Text(
-                'Code à 6 chiffres pour déverrouiller l\'app',
+                _subtitle,
                 style: TextStyle(
                   fontSize: compact ? 13 : 14,
                   color: AppColors.textSecondary,
@@ -166,16 +224,17 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
                 pinLength: currentPin.length,
                 onDigit: _onDigit,
                 onDelete: _onDelete,
-                onConfirm: currentPin.length == 6 ? () => _onPinEntered(currentPin) : null,
+                onConfirm: currentPin.length == 6 ? _onConfirm : null,
               ),
               const SizedBox(height: 16),
-              TextButton(
-                onPressed: _skip,
-                child: const Text(
-                  'Configurer plus tard',
-                  style: TextStyle(color: AppColors.textMuted),
+              if (_step == _PinStep.oldPin || _step == _PinStep.newPin)
+                TextButton(
+                  onPressed: _skip,
+                  child: Text(
+                    _step == _PinStep.oldPin ? 'Annuler' : 'Configurer plus tard',
+                    style: const TextStyle(color: AppColors.textMuted),
+                  ),
                 ),
-              ),
               SizedBox(height: compact ? 8 : 16),
             ],
           ),
@@ -185,32 +244,18 @@ class _PinSetupScreenState extends ConsumerState<PinSetupScreen> {
   }
 
   void _onDigit(String digit) {
-    if (_showConfirm) {
-      if (_confirmController.text.length < 6) {
-        _confirmController.text += digit;
-        setState(() {});
-      }
-    } else {
-      if (_pinController.text.length < 6) {
-        _pinController.text += digit;
-        setState(() {});
-      }
+    if (_pinController.text.length < 6) {
+      _pinController.text += digit;
+      setState(() {});
     }
   }
 
   void _onDelete() {
-    if (_showConfirm) {
-      if (_confirmController.text.isNotEmpty) {
-        _confirmController.text = _confirmController.text
-            .substring(0, _confirmController.text.length - 1);
-      }
-    } else {
-      if (_pinController.text.isNotEmpty) {
-        _pinController.text = _pinController.text
-            .substring(0, _pinController.text.length - 1);
-      }
+    if (_pinController.text.isNotEmpty) {
+      _pinController.text = _pinController.text
+          .substring(0, _pinController.text.length - 1);
+      setState(() {});
     }
-    setState(() {});
   }
 }
 
